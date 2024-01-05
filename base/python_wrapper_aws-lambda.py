@@ -12,7 +12,7 @@ def handler(event, context):
 
     event_str = json.dumps(event)
     
-    result = subprocess.run(["Rscript", "/tmp/action/faasr_start_invoke_openwhisk_aws-lambda.R", event_str],
+    result = subprocess.run(["Rscript", "/tmp/action/faasr_start_invoke_aws-lambda.R", event_str],
                         capture_output=True,
                         text=True,
                         cwd='/tmp/action')

@@ -29,7 +29,7 @@ FROM build as runtime
 RUN mkdir -p /lambda_runtime /action
 
 # Copy FaaSr invocation code
-COPY faasr_start_invoke_openwhisk_aws-lambda.R faasr_start_invoke_github-actions.R /action/
+COPY faasr_start_invoke_helper.R faasr_start_invoke_aws-lambda.R faasr_start_invoke_github-actions.R /action/
 
 # Copy Python wrapper
 COPY python_wrapper_aws-lambda.py /lambda_runtime/lambda_function.py
@@ -53,7 +53,7 @@ RUN cp openwhisk-runtime-docker/core/actionProxy/owplatform/openwhisk.py /action
 
 # Setup basic executable
 # Copy FaaSr invocation code
-COPY faasr_start_invoke_openwhisk_aws-lambda.R /action/exec
+COPY faasr_start_invoke_openwhisk.R /action/exec
 RUN chmod +x /action/exec
 
 # Install FaaSr
