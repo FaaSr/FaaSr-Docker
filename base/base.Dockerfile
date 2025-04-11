@@ -16,12 +16,6 @@ RUN update-ca-certificates \
     && pip install --no-cache-dir --requirement /tmp/requirements.txt && \
     rm /tmp/requirements.txt
 
-# Install R packages
-COPY R_packages.R /tmp/
-RUN Rscript /tmp/R_packages.R && \
-    rm /tmp/R_packages.R && \
-    rm -rf /tmp/downloaded_packages/ /tmp/*.rds /tmp/*.tar.gz
-
 # Stage 2: Runtime stage
 FROM build as runtime
 
