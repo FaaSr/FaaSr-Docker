@@ -1,0 +1,6 @@
+faasr_trigger: GitHub Action: Successfully invoked: start
+
+{"faasr":"Finished execution of User Function add"}
+
+{"faasr":"With Action Invocation ID is c3d61b30-ab7b-415f-bbe3-8699641dc4f2"}
+

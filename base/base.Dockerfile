@@ -24,7 +24,7 @@ RUN mkdir -p /action
 
 # Copy FaaSr invocation code
 # to-do: add entry points for other platforms
-COPY faasr_start_invoke_github-actions.py /action/
+COPY faasr_start_invoke_github_actions.py /action/
 
 # Add json schema
 ADD https://raw.githubusercontent.com/FaaSr/FaaSr-package/main/schema/FaaSr.schema.json /action/
