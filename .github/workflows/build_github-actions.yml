@@ -1,0 +1,55 @@
+name: py-github-actions -> GHCR
+
+on: 
+  workflow_dispatch:
+    inputs:
+      # BASE_IMAGE is the full user/name:tag of the base FaaSr image (stored in DockerHub) to build from 
+      BASE_IMAGE:
+        description: 'user/name:tag of the base FaaSr image e.g. janedoe/base-python:0.1.0'
+        required: true
+        default: 'nolcut/base-python:0.1.0'
+      # TARGET_NAME is the name of the FaaS-specific image to build
+      # Examples: github-actions-python
+      TARGET_NAME:
+        description: 'name of the FaaS-specific image to build'
+        required: true
+        default: 'github-actions-python'
+      # FAASR_VERSION is the FaaSr-py version tag to be used for this base FaaSr image
+      FAASR_VERSION:
+        description: 'FaaSr-py version'
+        required: true 
+      # FAASR_INSTALL_REPO is the GitHub repo to install FaaSr from
+      FAASR_INSTALL_REPO:
+        description: 'GitHub repo to install FaaSr-py from'
+        required: true
+        default: 'nolcut/FaaSr-py-package'
+      # GHCR_IO_REPO is the GitHub Container Repository (GHCR) to push image to
+      GHCR_IO_REPO:
+        description: 'GitHub Container Repository (GHCR) to push image to'
+        required: true
+        default: 'faasr'
+
+
+permissions: write-all
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Login to the Github Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.event.inputs.GHCR_IO_REPO }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build github-actions Container registry image
+        run: |
+          cd faas_specific
+          docker build -f github-actions.Dockerfile -t ghcr.io/${{ github.event.inputs.GHCR_IO_REPO }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BASE_IMAGE=${{ github.event.inputs.BASE_IMAGE }} --build-arg FAASR_VERSION=${{ github.event.inputs.FAASR_VERSION }} --build-arg FAASR_INSTALL_REPO=${{ github.event.inputs.FAASR_INSTALL_REPO }} .
+      - name: Push github-actions image to GitHub Container registry
+        run: |
+          docker push ghcr.io/${{ github.event.inputs.GHCR_IO_REPO }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
