@@ -7,6 +7,7 @@ secrets = os.getenv("SECRET_PAYLOAD")
 token = os.getenv("GITHUB_PAT")
 faasr_json = os.getenv("PAYLOAD")
 
+
 payload_data = json.loads(faasr_json)
 secrets_data = json.loads(secrets)
 
@@ -22,9 +23,9 @@ faasr.run_user_function(imported_functions)
 
 faasr.trigger()
 
-msg_1 = '{\"faasr\":\"Finished execution of User Function ' + curr_action + '\"}\n'
+msg_1 = '{\"faasr\":\"Finished execution of user function ' + curr_action + '\"}\n'
 print(msg_1)
 FaaSr_py.faasr_log(msg_1)
-msg_2 = '{\"faasr\":\"With Action Invocation ID is ' + full_payload["InvocationID"] +'\"}\n'
+msg_2 = '{\"faasr\":\"Action Invocation ID is ' + full_payload["InvocationID"] +'\"}\n'
 print(msg_2)
 FaaSr_py.faasr_log(msg_2)

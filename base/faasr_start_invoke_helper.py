@@ -263,7 +263,7 @@ def faasr_import_py_files(directory="."):
         "faasr_start_invoke_helper.py",
         "faasr_start_invoke_openwhisk.py",
         "faasr_start_invoke_aws-lambda.py",
-        "faasr_start_invoke_github-actions.py",
+        "faasr_start_invoke_github_actions.py",
     ]
     # convert relative path to absolute path
     directory = os.path.abspath(directory)
