@@ -8,6 +8,7 @@ import subprocess
 import re
 import base64
 import importlib
+import FaaSr_py
 
 
 def faasr_get_github_clone(url):
@@ -260,6 +261,9 @@ def faasr_import_py_files(directory="."):
     This function imports python files in current working directory and returns their functions
     """
     ignore_files = [
+        "test_gh_invoke.py",
+        "test.py",
+        "func_test.py",
         "faasr_start_invoke_helper.py",
         "faasr_start_invoke_openwhisk.py",
         "faasr_start_invoke_aws-lambda.py",

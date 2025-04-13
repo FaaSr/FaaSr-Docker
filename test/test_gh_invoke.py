@@ -1,6 +1,11 @@
 import os
 import json
+import sys
 import argparse
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 parser = argparse.ArgumentParser(description="Set environment variables from token and payload/secrets files")
 parser.add_argument('token_file')
@@ -25,4 +30,5 @@ os.environ["GITHUB_PAT"] = token
 os.environ['PAYLOAD'] = payload
 
 
-import faasr_start_invoke_github_actions
+from base import faasr_start_invoke_github_actions
+faasr_start_invoke_github_actions.main()
