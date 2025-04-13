@@ -1,6 +1,6 @@
 import json
 import FaaSr_py
-from .faasr_start_invoke_helper import *
+from faasr_start_invoke_helper import *
 
 def main():
     secrets = os.getenv("SECRET_PAYLOAD")
