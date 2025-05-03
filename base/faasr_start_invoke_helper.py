@@ -39,16 +39,12 @@ def faasr_get_github_clone(url):
 
     # check return code for git clone command. If non-zero, then throw error
     if check.returncode != 0:
-        err_msg = (
-            '{"faasr_install_git_repo":"no repo found, check repository url: '
-            + url
-            + '"}'
-        )
+        err_msg = '{"faasr_install_git_repo":"no repo found, check repository url: '+ url + '"}'
         print(err_msg)
         sys.exit(1)
 
 
-def faasr_get_github(path):
+def faasr_get_github(faasr_source, path):
     """
     This function downloads a repo specified by a github path [username/repo] to a tarball file
     """
@@ -70,7 +66,7 @@ def faasr_get_github(path):
         path = None
 
     url = f"https://api.github.com/repos/{repo}/tarball"
-    tar_name = f"{reponame}.tar.gz"
+    tar_name = f"/tmp/{reponame}.tar.gz"
 
     # send get request
     response1 = requests.get(
@@ -96,9 +92,9 @@ def faasr_get_github(path):
                 members = [
                     m for m in tar.getmembers() if m.name.startswith(extract_path)
                 ]
-                tar.extractall(members=members)
+                tar.extractall(path=f"/tmp/python-functions{faasr_source['InvocationID']}", members=members)
             else:
-                tar.extractall()
+                tar.extractall(path=f"/tmp/python-functions{faasr_source['InvocationID']}")
 
         os.remove(tar_name)
 
@@ -109,13 +105,7 @@ def faasr_get_github(path):
         print(err_msg)
         sys.exit(1)
     else:
-        err_msg = (
-            '{"faasr_install_git_repo": "Not found - check github repo: '
-            + username
-            + "/"
-            + repo
-            + '"}\n'
-        )
+        err_msg = '{"faasr_install_git_repo": "Not found - check github repo: ' + username + "/" + repo + '"}\n'
         print(err_msg)
         sys.exit(1)
 
@@ -137,9 +127,7 @@ def faasr_get_github_raw(token=None, path=None):
     username = parts[0]
     reponame = parts[1]
     repo = f"{username}/{reponame}"
-    print(f"repo faasr_get_github_raw: {repo}")
     path = "/".join(parts[2:])
-    print(path)
     pat = token
     url = f"https://api.github.com/repos/{repo}/contents/{path}"
     headers = {
@@ -168,18 +156,12 @@ def faasr_get_github_raw(token=None, path=None):
         sys.exit(1)
     else:
         # to-do: this error is wrong in the original
-        err_msg = (
-            '{"faasr_install_git_repo":"Not found - check github repo: '
-            + repo
-            + "/"
-            + path
-            + '"}\n'
-        )
+        err_msg = '{"faasr_install_git_repo":"Not found - check github repo: ' + repo + "/" + path + '"}\n'
         print(err_msg)
         sys.exit(1)
 
 
-def faasr_install_git_repos(gits):
+def faasr_install_git_repos(faasr_source, gits):
     """
     This function downloads content from git repo(s)
     """
@@ -212,7 +194,7 @@ def faasr_install_git_repos(gits):
                     # if the path is a non-python file, download the repo
                     msg = '{"faasr_install_git_repo":"get git repo files: ' + path + '"}\n'
                     print(msg)
-                    faasr_get_github(path)
+                    faasr_get_github(faasr_source, path)
 
 
 def faasr_pip_install(package):
@@ -309,13 +291,7 @@ def faasr_import_py_files(directory="."):
                     globals().update(module.__dict__)
 
                 except Exception as e:
-                    err_msg = (
-                        '{"faasr_source_py_files":"python file '
-                        + f
-                        + " has following source error: "
-                        + str(e)
-                        + '"}\n'
-                    )
+                    err_msg = '{"faasr_source_py_files":"python file ' + f + " has following source error: " + str(e) + '"}\n'
                     print(err_msg)
                     sys.exit(1)
     return imported_functions
@@ -324,7 +300,7 @@ def faasr_import_py_files(directory="."):
 def faasr_func_dependancy_install(faasr_source, funcname, new_lib=None):
     # get files from git repo
     gits = faasr_source["FunctionGitRepo"][funcname]
-    faasr_install_git_repos(gits)
+    faasr_install_git_repos(faasr_source, gits)
 
     # to-do: install pypi packages
     if "FunctionPyPIPackage" in faasr_source:
@@ -338,6 +314,6 @@ def faasr_func_dependancy_install(faasr_source, funcname, new_lib=None):
         faasr_install_git_packages(gh_packages)
 
     # source python files
-    imported_functions = faasr_import_py_files()
+    imported_functions = faasr_import_py_files(f"/tmp/python-functions{faasr_source['InvocationID']}")
 
     return imported_functions
