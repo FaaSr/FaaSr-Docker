@@ -26,7 +26,7 @@ funcname <- .faasr$FunctionList[[.faasr$FunctionInvoke]]$FunctionName
 faasr_dependency_install(.faasr, funcname)
 
 # Execute User function
-FaaSr::faasr_run_user_function(.faasr)
+.faasr <- FaaSr::faasr_run_user_function(.faasr)
 
 # Trigger the next functions
 FaaSr::faasr_trigger(.faasr)
