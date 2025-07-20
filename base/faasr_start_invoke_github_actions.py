@@ -81,7 +81,8 @@ def main():
     full_payload = get_env_and_payload()
     overwritten = json.loads(os.getenv("OVERWRITTEN"))
     faasr = FaaSr(full_payload, overwritten)
-    faasr.validate_payload()
+    if not debug_config.SKIP_WF_VALIDATE:
+        faasr.validate_payload()
 
     if not faasr["InvocationID"]: 
         faasr["InvocationID"] = str(uuid.uuid4()) 
