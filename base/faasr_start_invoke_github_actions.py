@@ -6,7 +6,7 @@ import time
 import sys
 import requests
 from multiprocessing import Process
-from FaaSr_py import FaaSr, Scheduler, Executor, faasr_log
+from FaaSr_py import FaaSr, Scheduler, Executor, faasr_log, debug_config
 from faasr_start_invoke_helper import *
     
 
