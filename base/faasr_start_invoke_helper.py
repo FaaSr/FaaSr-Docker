@@ -142,13 +142,12 @@ def faasr_get_github_raw(token=None, path=None):
         "Accept": "application/vnd.github.v3+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
-
-    # send get requests
-    if path is None:
-        response1 = requests.get(url, headers=headers)
-    else:
+    
+    if path:
         headers["Authorization"] = f"token{path}"
-        response1 = requests.get(url, headers=headers)
+    
+    # send get request
+    response1 = requests.get(url, headers=headers)
 
     if response1.status_code == 200:
         msg = '{"faasr_install_git_repo":"Successful"}\n'
