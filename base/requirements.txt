@@ -8,3 +8,5 @@ boto3==1.37.11
 requests==2.32.3
 PyYAML==6.0.2
 jsonschema==4.23.0
+faasr-server-python
+git+https://github.com/nolcut/faasr-py-dev/blob/main/FaaSr_py
