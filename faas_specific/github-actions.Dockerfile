@@ -8,9 +8,6 @@ ARG FAASR_VERSION
 # FAASR_INSTALL_REPO is tha name of the user's GitHub repository to install FaaSr from e.g. janedoe/FaaSr-Package-dev
 ARG FAASR_INSTALL_REPO
 
-# Install FaaSr from specified repo and tag
-RUN pip install "${FAASR_INSTALL_REPO}@${FAASR_VERSION}"
-
 # GitHub Actions specifics
 WORKDIR /action
 
