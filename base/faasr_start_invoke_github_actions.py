@@ -1,13 +1,12 @@
 import json
-import FaaSr_py
 import uuid
 import os
 import time
 import sys
 import requests
+from faasr_start_invoke_helper import *
 from multiprocessing import Process
 from FaaSr_py import FaaSr, Scheduler, Executor, faasr_log, debug_config
-from faasr_start_invoke_helper import *
     
 
 def get_env_and_payload():
