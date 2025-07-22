@@ -6,10 +6,9 @@ FROM $BASE_IMAGE
 # Install R
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        r-base \
+        r-base && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
 # Install jsonlite and httr
 RUN Rscript -e "install.packages(c('jsonlite', 'httr'), repos='https://cloud.r-project.org')"
 
