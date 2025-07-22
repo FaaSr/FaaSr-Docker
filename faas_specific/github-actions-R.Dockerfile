@@ -6,11 +6,12 @@ FROM $BASE_IMAGE
 # Install R
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        libcurl4-openssl-dev \
-        libssl-dev \
-        libxml2-dev && \
+        r-base \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Install jsonlite and httr
+RUN Rscript -e "install.packages(c('jsonlite', 'httr'), repos='https://cloud.r-project.org')"
 
 # FAASR_VERSION FaaSr version to install from - this must match a tag in the GitHub repository e.g. 1.1.2
 ARG FAASR_VERSION
