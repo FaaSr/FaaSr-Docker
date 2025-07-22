@@ -7,9 +7,9 @@ FROM $BASE_IMAGE
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         r-base && \
+    ln -s /usr/bin/Rscript /usr/local/bin/Rscript && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-# Install jsonlite and httr
 RUN Rscript -e "install.packages(c('jsonlite', 'httr'), repos='https://cloud.r-project.org')"
 
 # FAASR_VERSION FaaSr version to install from - this must match a tag in the GitHub repository e.g. 1.1.2
