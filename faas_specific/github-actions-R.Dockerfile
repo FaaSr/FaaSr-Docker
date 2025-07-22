@@ -12,8 +12,6 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN ln -s /usr/bin/Rscript /usr/local/bin/Rscript
-
 # jsonlite & httr
 RUN Rscript -e "install.packages(c('jsonlite', 'httr'), repos='https://cloud.r-project.org')"
 
