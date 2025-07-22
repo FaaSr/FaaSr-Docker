@@ -11,6 +11,10 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+
+# jsonlite & httr
+RUN Rscript -e "install.packages(c('jsonlite', 'httr'), repos='https://cloud.r-project.org')"
+
 # FAASR_VERSION FaaSr version to install from - this must match a tag in the GitHub repository e.g. 1.1.2
 ARG FAASR_VERSION
 # FAASR_INSTALL_REPO is tha name of the user's GitHub repository to install FaaSr from e.g. janedoe/FaaSr-Package-dev
