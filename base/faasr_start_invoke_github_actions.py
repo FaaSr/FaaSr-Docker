@@ -33,12 +33,12 @@ def main():
     Fetch user function, install dependencies, run user function
     Trigger subsequent functions in the workflow
     """
-    log_sender = S3LogSender()
-
     # get payload
     faasr_payload = get_payload_from_env()
     if not global_config.SKIP_WF_VALIDATE:
         faasr_payload.start()
+
+    global_config.add_s3_log_handler(faasr_payload)
 
     # for testing
     if not faasr_payload["InvocationID"]: 
@@ -53,6 +53,8 @@ def main():
     scheduler = Scheduler(faasr_payload)
     scheduler.trigger(function_result)
 
+    # flush s3 log singleton
+    log_sender = S3LogSender()
     log_sender.flush_log()
 
 if __name__ == "__main__":
