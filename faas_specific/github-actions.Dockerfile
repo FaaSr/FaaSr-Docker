@@ -3,6 +3,12 @@ ARG BASE_IMAGE
 # Start from specified base image
 FROM $BASE_IMAGE
 
+# Create runtime directory
+RUN mkdir -p /action
+
+# Copy FaaSr invocation code
+COPY faasr_start_invoke_github_actions.py /action/
+
 # FAASR_VERSION FaaSr version to install from - this must match a tag in the GitHub repository e.g. 1.1.2
 ARG FAASR_VERSION
 # FAASR_INSTALL_REPO is tha name of the user's GitHub repository to install FaaSr from e.g. janedoe/FaaSr-Package-dev
