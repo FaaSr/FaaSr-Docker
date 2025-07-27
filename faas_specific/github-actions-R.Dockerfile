@@ -3,6 +3,12 @@ ARG BASE_IMAGE
 # Start from specified base image
 FROM $BASE_IMAGE
 
+# Create function directory
+RUN mkdir -p /action
+
+# Copy FaaSr invocation code
+COPY faasr_start_invoke_github_actions.py /action/
+
 # Install R
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
