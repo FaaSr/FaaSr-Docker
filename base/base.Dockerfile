@@ -16,18 +16,5 @@ RUN update-ca-certificates \
     && pip install --no-cache-dir --requirement /tmp/requirements.txt && \
     rm /tmp/requirements.txt
 
-# Stage 2: Runtime stage
-FROM build as runtime
-
-# Create function directory
-RUN mkdir -p /lambda_runtime /action
-
-# Copy FaaSr invocation code
-# to-do: add entry points for other platforms
-COPY faasr_start_invoke_github_actions.py /action/
-
-# Add json schema
-ADD https://raw.githubusercontent.com/FaaSr/FaaSr-package/main/schema/FaaSr.schema.json /action/
-
 # Metadata
 LABEL description="Docker image for FaaSr-py"
