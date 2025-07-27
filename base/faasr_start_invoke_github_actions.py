@@ -8,21 +8,20 @@ from multiprocessing import Process
 from FaaSr_py import (FaaSrPayload, Scheduler, Executor, faasr_log, global_config, S3LogSender)
 
 
-def get_env_and_payload():
+def get_payload_from_env():
     """
-    (to-do) -- url part of faasr class
-    (to-do) -- from secret store or payload
-    Get payload and env
+    Get payload from env
     """
     payload_url = os.getenv("PAYLOAD_URL")
-    secrets = json.loads(os.getenv("SECRET_PAYLOAD"))
     overwritten = json.loads(os.getenv("OVERWRITTEN"))
 
-    faasr = FaaSrPayload(payload_url, overwritten)
-    faasr.faasr_replace_values(secrets)
+    faasr_payload = FaaSrPayload(payload_url, overwritten)
+    curr_func = faasr_payload["FunctionInvoke"]
+    if faasr_payload["FunctionList"][curr_func].get("UseSecretStore"):
+        secrets = os.getenv("SECRET_PAYLOAD")
+        faasr_payload.faasr_replace_values(secrets)
+    return faasr_payload
 
-    return faasr 
-    
 
 def main():
     """
@@ -37,9 +36,13 @@ def main():
     log_sender = S3LogSender()
 
     # get payload
-    faasr_payload = get_env_and_payload()
+    faasr_payload = get_payload_from_env()
     if not global_config.SKIP_WF_VALIDATE:
         faasr_payload.start()
+
+    # for testing
+    if not faasr_payload["InvocationID"]: 
+        faasr_payload["InvocationID"] = str(uuid.uuid4()) 
 
     # run user function
     function_executor = Executor(faasr_payload)
