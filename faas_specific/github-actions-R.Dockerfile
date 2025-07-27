@@ -3,7 +3,7 @@ ARG BASE_IMAGE
 # Start from specified base image
 FROM $BASE_IMAGE
 
-# Create function directory
+# Create runtime directory
 RUN mkdir -p /action
 
 # Copy FaaSr invocation code
