@@ -19,7 +19,7 @@ def get_payload_from_env():
     curr_func = faasr_payload["FunctionInvoke"]
     if faasr_payload["FunctionList"][curr_func].get("UseSecretStore"):
         secrets = os.getenv("SECRET_PAYLOAD")
-        faasr_payload.faasr_replace_values(secrets)
+        faasr_payload.faasr_replace_values(json.loads(secrets))
     return faasr_payload
 
 
@@ -40,10 +40,6 @@ def main():
 
     global_config.add_s3_log_handler(faasr_payload)
 
-    # for testing
-    if not faasr_payload["InvocationID"]: 
-        faasr_payload["InvocationID"] = str(uuid.uuid4()) 
-
     # run user function
     function_executor = Executor(faasr_payload)
     curr_function = faasr_payload["FunctionInvoke"]
@@ -53,7 +49,6 @@ def main():
     scheduler = Scheduler(faasr_payload)
     scheduler.trigger(function_result)
 
-    # flush s3 log singleton
     log_sender = S3LogSender()
     log_sender.flush_log()
 
