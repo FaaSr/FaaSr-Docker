@@ -11,6 +11,7 @@ from FaaSr_py import (FaaSrPayload, Scheduler, Executor, faasr_log, global_confi
 
 
 logger = logging.getLogger("FaaSr_py")
+local_run = False
 
 
 def get_payload_from_env():
@@ -24,7 +25,7 @@ def get_payload_from_env():
     faasr_payload = FaaSrPayload(payload_url, overwritten)
 
     curr_func = faasr_payload["FunctionInvoke"]
-    if faasr_payload["FunctionList"][curr_func].get("UseSecretStore"):
+    if faasr_payload["ActionList"][curr_func].get("UseSecretStore") or local_run:
         logger.info("Fetching secrets from secret store")
 
         # get secrets from env
@@ -50,10 +51,14 @@ def main():
     # get payload
     faasr_payload = get_payload_from_env()
     if not global_config.SKIP_WF_VALIDATE:
-        logger.info("Skipping WF validation")
         faasr_payload.start()
+    else:
+        logger.info("Skipping WF validation")
 
     global_config.add_s3_log_handler(faasr_payload, start_time)
+
+    if local_run and not faasr_payload["InvocationID"]:
+        faasr_payload["InvocationID"] = str(uuid.uuid4())
 
     # run user function
     function_executor = Executor(faasr_payload)
