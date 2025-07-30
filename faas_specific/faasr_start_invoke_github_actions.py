@@ -6,6 +6,7 @@ import sys
 import logging
 
 from datetime import datetime
+
 from multiprocessing import Process
 from FaaSr_py import (FaaSrPayload, Scheduler, Executor, faasr_log, global_config, S3LogSender)
 
@@ -25,7 +26,8 @@ def get_payload_from_env():
     faasr_payload = FaaSrPayload(payload_url, overwritten)
 
     curr_func = faasr_payload["FunctionInvoke"]
-    if faasr_payload["ActionList"][curr_func].get("UseSecretStore") or local_run:
+    curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
+    if faasr_payload["ComputeServers"][curr_server].get("UseSecretStore") or local_run:
         logger.info("Fetching secrets from secret store")
 
         # get secrets from env
@@ -78,3 +80,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
