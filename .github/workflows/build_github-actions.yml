@@ -7,13 +7,13 @@ on:
       BASE_IMAGE:
         description: 'user/name:tag of the base FaaSr image e.g. janedoe/base-python:0.1.0'
         required: true
-        default: 'nolcut/base-python:v0.1.0'
+        default: 'nolcut/faasr-rpc-test:0.1.6'
       # TARGET_NAME is the name of the FaaS-specific image to build
       # Examples: github-actions-python
       TARGET_NAME:
         description: 'name of the FaaS-specific image to build'
         required: true
-        default: 'github-actions-python'
+        default: 'ga-rpc-python-r'
       # FAASR_VERSION is the FaaSr-py version tag to be used for this base FaaSr image
       FAASR_VERSION:
         description: 'FaaSr-py version'
@@ -22,12 +22,12 @@ on:
       FAASR_INSTALL_REPO:
         description: 'GitHub repo to install FaaSr-py from'
         required: true
-        default: 'git+https://github.com/nolcut/FaaSr-py-package.git'
+        default: 'git+https://github.com/nolcut/FaaSr-py-dev.git'
       # GHCR_IO_REPO is the GitHub Container Repository (GHCR) to push image to
       GHCR_IO_REPO:
         description: 'GitHub Container Repository (GHCR) to push image to'
         required: true
-        default: 'faasr'
+        default: 'nolcut'
 
 
 permissions: write-all
