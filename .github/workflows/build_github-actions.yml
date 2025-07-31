@@ -13,7 +13,7 @@ on:
       TARGET_NAME:
         description: 'name of the FaaS-specific image to build'
         required: true
-        default: 'ga-rpc-python-r'
+        default: 'ga-rpc-python'
       # FAASR_VERSION is the FaaSr-py version tag to be used for this base FaaSr image
       FAASR_VERSION:
         description: 'FaaSr-py version'
