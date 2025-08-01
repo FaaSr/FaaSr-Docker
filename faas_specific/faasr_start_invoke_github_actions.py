@@ -1,19 +1,26 @@
 import json
 import uuid
 import os
-import time
-import sys
 import logging
 
 from datetime import datetime
-
-from multiprocessing import Process
-from FaaSr_py import (FaaSrPayload, Scheduler, Executor, faasr_log, global_config, S3LogSender)
+from FaaSr_py import (FaaSrPayload, Scheduler, Executor, global_config, S3LogSender)
 
 
 logger = logging.getLogger("FaaSr_py")
 local_run = False
 
+
+def store_pat_in_env(dictionary):
+    """
+    Checks if token is present in dict and stores
+    in environment variable "TOKEN" if it is
+    """
+    for key, val in dictionary.items():
+        if key.endswith("TOKEN"):
+            os.environ["TOKEN"] = val
+            return True
+    return False
 
 def get_payload_from_env():
     """
@@ -27,14 +34,24 @@ def get_payload_from_env():
 
     curr_func = faasr_payload["FunctionInvoke"]
     curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
+
+    # determine if secrets should be fetched 
+    # from secret store or overwritten payload
     if faasr_payload["ComputeServers"][curr_server].get("UseSecretStore") or local_run:
         logger.info("Fetching secrets from secret store")
 
         # get secrets from env
         secrets = os.getenv("SECRET_PAYLOAD")
-        faasr_payload.faasr_replace_values(json.loads(secrets))
+        secrets_dict = json.loads(secrets)
+        token_present = store_pat_in_env(secrets_dict)
+        faasr_payload.faasr_replace_values(secrets_dict)
     else:
+        # store token in env for use in fetching file from gh
+        token_present = store_pat_in_env(overwritten)
         logger.info("UseSecretStore off -- using overwritten")
+
+    if not token_present:
+            logger.info("Without a GitHub PAT in your workflow, you may hit rate limits")
     return faasr_payload
 
 
@@ -70,7 +87,7 @@ def main():
 
     # trigger next functions
     scheduler = Scheduler(faasr_payload)
-    scheduler.trigger(function_result)
+    scheduler.trigger_all(function_result)
 
     log_sender = S3LogSender.get_log_sender()
     log_sender.flush_log()
@@ -80,5 +97,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
