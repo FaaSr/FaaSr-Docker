@@ -7,27 +7,27 @@ from datetime import datetime
 from FaaSr_py import Executor, FaaSrPayload, S3LogSender, Scheduler, global_config
 
 logger = logging.getLogger("FaaSr_py")
-local_run = False
+local_run = True
 
 
-def store_pat_in_env(dictionary):
+def store_token_in_env(dictionary):
     """
     Checks if token is present in dict and stores
     in environment variable "TOKEN" if it is
     """
     for key, val in dictionary.items():
-        if key.endswith("TOKEN"):
+        if key == "TOKEN":
             os.environ["TOKEN"] = val
             return True
     return False
 
 
-def get_payload_from_env():
+def get_payload_from_env(event):
     """
     Get payload from env
     """
-    payload_url = os.getenv("PAYLOAD_URL")
-    overwritten = json.loads(os.getenv("OVERWRITTEN"))
+    payload_url = event["PAYLOAD_URL"]
+    overwritten = event["OVERWRITTEN"]
 
     logger.debug(f"Payload URL: {payload_url}")
     faasr_payload = FaaSrPayload(payload_url, overwritten)
@@ -41,21 +41,21 @@ def get_payload_from_env():
         logger.info("Fetching secrets from secret store")
 
         # get secrets from env
-        secrets = os.getenv("SECRET_PAYLOAD")
+        secrets = event["SECRET_PAYLOAD"]
         secrets_dict = json.loads(secrets)
-        token_present = store_pat_in_env(secrets_dict)
+        token_present = store_token_in_env(secrets_dict)
         faasr_payload.faasr_replace_values(secrets_dict)
     else:
-        # store token in env for use in fetching file from gh
-        token_present = store_pat_in_env(overwritten)
+        # store access token in env for use in aws
+        token_present = store_token_in_env(overwritten)
         logger.info("UseSecretStore off -- using overwritten")
 
     if not token_present:
-        logger.info("Without a GitHub PAT in your workflow, you may hit rate limits")
+        logger.info("No GitHub PAT provided")
     return faasr_payload
 
 
-def main():
+def handler(event, context):
     """
     FaaSr entry point:
 
@@ -68,7 +68,7 @@ def main():
     start_time = datetime.now()
 
     # get payload
-    faasr_payload = get_payload_from_env()
+    faasr_payload = get_payload_from_env(event)
     if not global_config.SKIP_WF_VALIDATE:
         faasr_payload.start()
     else:
@@ -94,7 +94,3 @@ def main():
 
     faasr_msg = f"Finished action -- InvocationID: {faasr_payload["InvocationID"]}"
     logger.info(faasr_msg)
-
-
-if __name__ == "__main__":
-    main()
