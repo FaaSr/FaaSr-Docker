@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import sys
 
 def main():
     """
@@ -26,21 +27,15 @@ def main():
         secrets = file.read().strip()
 
     event = {
-        "SECRET_PAYLOAD": secrets,
         "OVERWRITTEN": json.loads(overwritten),
         "PAYLOAD_URL": url,
     }
+
+    os.environ["SECRET_PAYLOAD"] = secrets
     if "My_GitHub_Account_TOKEN" in json.loads(secrets):
         os.environ["TOKEN"] = json.loads(secrets)["My_GitHub_Account_TOKEN"]
-    if "My_S3_Bucket_ACCESS_KEY" in json.loads(secrets):
-        os.environ["ACCESS_KEY"] = json.loads(secrets)["My_S3_Bucket_ACCESS_KEY"]
-    if "My_S3_Bucket_SECRET_KEY" in json.loads(secrets):
-        os.environ["SECRET_KEY"] = json.loads(secrets)["My_S3_Bucket_SECRET_KEY"]
-    if "My_Lambda_Account_ACCESS_KEY" in json.loads(secrets):
-        os.environ["ACCESS_KEY"] = json.loads(secrets)["My_Lambda_Account_ACCESS_KEY"]
-    if "My_Lambda_Account_SECRET_KEY" in json.loads(secrets):
-        os.environ["SECRET_KEY"] = json.loads(secrets)["My_Lambda_Account_SECRET_KEY"]
-
+    
+    sys.path.insert(1, '../faas_specific')
     import faasr_start_invoke_aws
 
     faasr_start_invoke_aws.handler(event, None)

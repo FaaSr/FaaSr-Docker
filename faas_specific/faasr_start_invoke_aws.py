@@ -22,9 +22,9 @@ def store_token_in_env(dictionary):
     return False
 
 
-def get_payload_from_env(event):
+def get_payload_from_event(event):
     """
-    Get payload from env
+    Get payload from http event
     """
     payload_url = event["PAYLOAD_URL"]
     overwritten = event["OVERWRITTEN"]
@@ -41,7 +41,7 @@ def get_payload_from_env(event):
         logger.info("Fetching secrets from secret store")
 
         # get secrets from env
-        secrets = event["SECRET_PAYLOAD"]
+        secrets = os.getenv("SECRET_PAYLOAD")
         secrets_dict = json.loads(secrets)
         token_present = store_token_in_env(secrets_dict)
         faasr_payload.faasr_replace_values(secrets_dict)
@@ -68,7 +68,7 @@ def handler(event, context):
     start_time = datetime.now()
 
     # get payload
-    faasr_payload = get_payload_from_env(event)
+    faasr_payload = get_payload_from_event(event)
     if not global_config.SKIP_WF_VALIDATE:
         faasr_payload.start()
     else:
