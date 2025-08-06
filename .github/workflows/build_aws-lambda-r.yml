@@ -1,0 +1,62 @@
+name: aws-lambda -> ECR
+
+on: 
+  workflow_dispatch:
+    inputs:
+      # BASE_IMAGE is the full user/name:tag of the base FaaSr image (stored in DockerHub) to build from 
+      # Examples: janedoe/base-tidyverse:1.1.2, faasr/base-tidyverse:1.1.3
+      BASE_IMAGE:
+        description: 'user/name:tag of the base FaaSr image e.g. janedoe/base-tidyverse:1.1.2'
+        required: true
+        default: 'public.ecr.aws/lambda/python:3.13'
+      # TARGET_NAME is the name of the FaaS-specific image to build
+      # Examples: aws-lambda-tidyverse
+      TARGET_NAME:
+        description: 'name of the FaaS-specific image to build'
+        required: true
+        default: 'docker.io/izzylerman/lambda-r'
+      # FAASR_VERSION is the FaaSr version tag to be used for this base FaaSr image
+      # Examples: 1.1.2, 1.3.1
+      FAASR_VERSION:
+        description: 'FaaSr version'
+        required: true 
+      # FAASR_INSTALL_REPO is the GitHub repo to install FaaSr from
+      # Examples: janedoe/FaaSr-Package-dev, faasr/FaaSr-Package
+      FAASR_INSTALL_REPO:
+        description: 'GitHub repo to install FaaSr from'
+        required: true
+        default: 'faasr/FaaSr-Package'
+      # AWS_REGION is the AWS ECR region to push image to
+      # Examples: us-east-1
+      AWS_REGION:
+        description: 'AWS ECR region to push image to'
+        required: true
+        default: 'us-east-1'
+
+
+permissions: write-all
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ github.event.inputs.AWS_REGION }}
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build aws-lambda Container registry image
+        run: |
+          cd faas_specific
+          docker build -f aws-lambda.Dockerfile -t ${{ steps.login-ecr.outputs.registry }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BASE_IMAGE=${{ github.event.inputs.BASE_IMAGE }} --build-arg FAASR_VERSION=${{ github.event.inputs.FAASR_VERSION }} --build-arg FAASR_INSTALL_REPO=${{ github.event.inputs.FAASR_INSTALL_REPO }} .
+      - name: Push aws-lambda image to ECR
+        run: |
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
