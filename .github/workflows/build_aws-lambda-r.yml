@@ -1,4 +1,4 @@
-name: aws-lambda -> ECR
+name: aws-lambda-r -> ECR
 
 on: 
   workflow_dispatch:
