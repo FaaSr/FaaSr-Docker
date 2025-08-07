@@ -9,7 +9,7 @@ COPY /base/requirements.txt ${LAMBDA_TASK_ROOT}
 # Copy invoke functions
 COPY faas_specific/faasr_start_invoke_aws.py ${LAMBDA_TASK_ROOT}
 
-RUN dnf install -y R git cmake
+RUN dnf install -y R git cmake tar
 
 # FAASR_VERSION FaaSr version to install from - this must match a tag in the GitHub repository e.g. 1.1.2
 ARG FAASR_VERSION
