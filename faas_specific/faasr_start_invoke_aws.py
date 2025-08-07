@@ -16,7 +16,10 @@ def store_token_in_env(dictionary):
     in environment variable "TOKEN" if it is
     """
     for key, val in dictionary.items():
-        if key == "TOKEN":
+        if isinstance(val, dict):
+            if store_token_in_env(val):
+                return True
+        elif key.lower().endswith("token"):
             os.environ["TOKEN"] = val
             return True
     return False

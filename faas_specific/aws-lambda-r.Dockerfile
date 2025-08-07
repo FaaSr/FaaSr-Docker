@@ -11,6 +11,7 @@ COPY faas_specific/faasr_start_invoke_aws.py ${LAMBDA_TASK_ROOT}
 
 #Install R 
 RUN dnf install -y R git cmake tar
+RUN dnf clean all
 RUN Rscript -e "install.packages(c('jsonlite', 'httr'), repos='https://cloud.r-project.org')"
 
 # FAASR_VERSION FaaSr version to install from - this must match a tag in the GitHub repository e.g. 1.1.2
