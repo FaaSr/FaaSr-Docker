@@ -1,14 +1,13 @@
 import json
-import uuid
-import os
 import logging
-
+import os
+import uuid
 from datetime import datetime
-from FaaSr_py import (FaaSrPayload, Scheduler, Executor, global_config, S3LogSender)
 
+from FaaSr_py import Executor, FaaSrPayload, S3LogSender, Scheduler, global_config
 
 logger = logging.getLogger("FaaSr_py")
-local_run = True
+local_run = False
 
 
 def store_pat_in_env(dictionary):

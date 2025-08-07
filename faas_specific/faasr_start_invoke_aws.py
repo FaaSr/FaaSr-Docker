@@ -7,7 +7,7 @@ from datetime import datetime
 from FaaSr_py import Executor, FaaSrPayload, S3LogSender, Scheduler, global_config
 
 logger = logging.getLogger("FaaSr_py")
-local_run = True
+local_run = False
 
 
 def store_token_in_env(dictionary):

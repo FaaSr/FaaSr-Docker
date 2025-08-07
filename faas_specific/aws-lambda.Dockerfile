@@ -3,9 +3,6 @@ ARG BASE_IMAGE
 # Start from specified base image
 FROM $BASE_IMAGE
 
-# Copy dependancies
-COPY /base/requirements.txt ${LAMBDA_TASK_ROOT}
-
 # Copy invoke functions
 COPY faas_specific/faasr_start_invoke_aws.py ${LAMBDA_TASK_ROOT}
 
@@ -16,9 +13,6 @@ RUN dnf clean all
 ARG FAASR_VERSION
 # FAASR_INSTALL_REPO is tha name of the user's GitHub repository to install FaaSr from e.g. janedoe/faasr-py-dev
 ARG FAASR_INSTALL_REPO
-
-# Download dependancies
-RUN pip install --no-cache-dir -r requirements.txt
 
 RUN pip install "${FAASR_INSTALL_REPO}@${FAASR_VERSION}"
 
