@@ -2,7 +2,7 @@ setuptools==68.0.0
 six==1.16.0
 gevent
 flask==2.3.2
-awslambdaric==2.0.4
+awslambdaric
 pytest==7.4.0
 boto3==1.37.11
 requests==2.32.3
@@ -11,4 +11,3 @@ jsonschema==4.23.0
 fastapi==0.115.13
 uvicorn==0.35.0
 pydantic==2.11.7
-faasr-server-python
