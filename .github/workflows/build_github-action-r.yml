@@ -22,7 +22,7 @@ on:
       FAASR_INSTALL_REPO:
         description: 'GitHub repo to install FaaSr-py from'
         required: true
-        default: 'git+https://github.com/nolcut/FaaSr-py-dev.git'
+        default: 'git+https://github.com/nolcut/faasr-py-dev.git'
       # GHCR_IO_REPO is the GitHub Container Repository (GHCR) to push image to
       GHCR_IO_REPO:
         description: 'GitHub Container Repository (GHCR) to push image to'
@@ -48,8 +48,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build github-actions Container registry image
         run: |
-          cd faas_specific
-          docker build -f github-actions-R.Dockerfile -t ghcr.io/${{ github.event.inputs.GHCR_IO_REPO }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BASE_IMAGE=${{ github.event.inputs.BASE_IMAGE }} --build-arg FAASR_VERSION=${{ github.event.inputs.FAASR_VERSION }} --build-arg FAASR_INSTALL_REPO=${{ github.event.inputs.FAASR_INSTALL_REPO }} .
+          docker build -f faas_specific/github-actions-R.Dockerfile -t ghcr.io/${{ github.event.inputs.GHCR_IO_REPO }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BASE_IMAGE=${{ github.event.inputs.BASE_IMAGE }} --build-arg FAASR_VERSION=${{ github.event.inputs.FAASR_VERSION }} --build-arg FAASR_INSTALL_REPO=${{ github.event.inputs.FAASR_INSTALL_REPO }} .
       - name: Push github-actions image to GitHub Container registry
         run: |
           docker push ghcr.io/${{ github.event.inputs.GHCR_IO_REPO }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }}

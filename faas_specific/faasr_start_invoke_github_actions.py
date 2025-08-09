@@ -16,7 +16,10 @@ def store_pat_in_env(dictionary):
     in environment variable "TOKEN" if it is
     """
     for key, val in dictionary.items():
-        if key.endswith("TOKEN"):
+        if isinstance(val, dict):
+            if store_pat_in_env(val):
+                return True
+        elif key.lower().endswith("token"):
             os.environ["TOKEN"] = val
             return True
     return False
@@ -47,7 +50,7 @@ def get_payload_from_env():
         faasr_payload.faasr_replace_values(secrets_dict)
     else:
         # store token in env for use in fetching file from gh
-        token_present = store_pat_in_env(overwritten)
+        token_present = store_pat_in_env(overwritten["ComputeServers"])
         logger.info("UseSecretStore off -- using overwritten")
 
     if not token_present:

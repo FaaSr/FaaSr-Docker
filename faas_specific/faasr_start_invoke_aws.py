@@ -7,7 +7,7 @@ from datetime import datetime
 from FaaSr_py import Executor, FaaSrPayload, S3LogSender, Scheduler, global_config
 
 logger = logging.getLogger("FaaSr_py")
-local_run = True
+local_run = False
 
 
 def store_token_in_env(dictionary):
@@ -16,7 +16,10 @@ def store_token_in_env(dictionary):
     in environment variable "TOKEN" if it is
     """
     for key, val in dictionary.items():
-        if key == "TOKEN":
+        if isinstance(val, dict):
+            if store_token_in_env(val):
+                return True
+        elif key.lower().endswith("token"):
             os.environ["TOKEN"] = val
             return True
     return False
@@ -27,7 +30,7 @@ def get_payload_from_event(event):
     Get payload from http event
     """
     payload_url = event["PAYLOAD_URL"]
-    overwritten = event["OVERWRITTEN"]
+    overwritten = json.loads(event["OVERWRITTEN"])
 
     logger.debug(f"Payload URL: {payload_url}")
     faasr_payload = FaaSrPayload(payload_url, overwritten)
@@ -65,6 +68,8 @@ def handler(event, context):
     Fetch user function, install dependencies, run user function
     Trigger subsequent functions in the workflow
     """
+    os.chdir("/tmp/")
+
     start_time = datetime.now()
 
     # get payload

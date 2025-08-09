@@ -6,7 +6,7 @@ on:
       # BASE_IMAGE is the full user/name:tag of the base FaaSr image (stored in DockerHub) to build from 
       # Examples: janedoe/base-tidyverse:1.1.2, faasr/base-tidyverse:1.1.3
       BASE_IMAGE:
-        description: 'user/name:tag of the base FaaSr image e.g. janedoe/base-tidyverse:1.1.2'
+        description: 'base image e.g. public.ecr.aws/lambda/python:3.13'
         required: true
         default: 'public.ecr.aws/lambda/python:3.13'
       # TARGET_NAME is the name of the FaaS-specific image to build
@@ -14,7 +14,7 @@ on:
       TARGET_NAME:
         description: 'name of the FaaS-specific image to build'
         required: true
-        default: 'docker.io/izzylerman/lambda'
+        default: 'faasr-python'
       # FAASR_VERSION is the FaaSr version tag to be used for this base FaaSr image
       # Examples: 1.1.2, 1.3.1
       FAASR_VERSION:
@@ -25,7 +25,7 @@ on:
       FAASR_INSTALL_REPO:
         description: 'GitHub repo to install FaaSr from'
         required: true
-        default: 'faasr/FaaSr-Package'
+        default: 'git+https://github.com/nolcut/faasr-py-dev.git'
       # AWS_REGION is the AWS ECR region to push image to
       # Examples: us-east-1
       AWS_REGION:
@@ -55,8 +55,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
       - name: Build aws-lambda Container registry image
         run: |
-          cd faas_specific
-          docker build -f aws-lambda.Dockerfile -t ${{ steps.login-ecr.outputs.registry }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BASE_IMAGE=${{ github.event.inputs.BASE_IMAGE }} --build-arg FAASR_VERSION=${{ github.event.inputs.FAASR_VERSION }} --build-arg FAASR_INSTALL_REPO=${{ github.event.inputs.FAASR_INSTALL_REPO }} .
+          docker build -f faas_specific/aws-lambda.Dockerfile -t ${{ steps.login-ecr.outputs.registry }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BASE_IMAGE=${{ github.event.inputs.BASE_IMAGE }} --build-arg FAASR_VERSION=${{ github.event.inputs.FAASR_VERSION }} --build-arg FAASR_INSTALL_REPO=${{ github.event.inputs.FAASR_INSTALL_REPO }} .
       - name: Push aws-lambda image to ECR
         run: |
           docker push ${{ steps.login-ecr.outputs.registry }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
