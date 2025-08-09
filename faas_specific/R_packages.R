@@ -1,4 +1,4 @@
-install.packages('remotes', version='2.4.2.1', repos='https://cloud.R-project.org')
+install.packages('remotes', repos='https://cloud.R-project.org')
 remotes::install_version('jsonlite', version='1.8.7', repos='https://cloud.R-project.org')
 remotes::install_version('devtools', version='2.4.5', repos='https://cloud.R-project.org')
 remotes::install_version('RCurl', version='1.98-1.12', repos='https://cloud.R-project.org')
