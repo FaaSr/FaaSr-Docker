@@ -30,7 +30,7 @@ def get_payload_from_event(event):
     Get payload from http event
     """
     payload_url = event["PAYLOAD_URL"]
-    overwritten = event["OVERWRITTEN"]
+    overwritten = json.loads(event["OVERWRITTEN"])
 
     logger.debug(f"Payload URL: {payload_url}")
     faasr_payload = FaaSrPayload(payload_url, overwritten)
@@ -68,6 +68,8 @@ def handler(event, context):
     Fetch user function, install dependencies, run user function
     Trigger subsequent functions in the workflow
     """
+    os.chdir("/tmp/")
+
     start_time = datetime.now()
 
     # get payload
