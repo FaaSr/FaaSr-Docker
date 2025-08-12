@@ -41,21 +41,20 @@ def get_payload_from_env():
     """
     payload_url = os.getenv("PAYLOAD_URL")
     overwritten = json.loads(os.getenv("OVERWRITTEN"))
-
+    
     logger.debug(f"Payload URL: {payload_url}")
     faasr_payload = FaaSrPayload(payload_url, overwritten)
-
+    
     curr_func = faasr_payload["FunctionInvoke"]
-    server_name = faasr_payload["ActionList"][curr_func]["FaaSServer"]
-    curr_server = faasr_payload["ComputeServers"][server_name]
-
+    curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
+    
     # determine if secrets should be fetched 
     # from secret store or overwritten payload
     if faasr_payload["ComputeServers"][curr_server].get("UseSecretStore") or local_run:
         logger.info("Fetching secrets from GCP Secret Manager")
         
         # Get project ID from compute server config
-        project_id = curr_server["Namespace"]
+        project_id = faasr_payload["ComputeServers"][curr_server]["Namespace"]
         
         # Get secret name from environment or use default
         secret_name = os.getenv("GCP_SECRET_NAME", "faasr-secrets")
