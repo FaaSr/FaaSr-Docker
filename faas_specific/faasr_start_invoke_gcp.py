@@ -3,26 +3,41 @@ import uuid
 import os
 import logging
 from datetime import datetime
+from google.cloud import secretmanager
 
 from FaaSr_py import (FaaSrPayload, Scheduler, Executor, global_config, S3LogSender)
 
 logger = logging.getLogger("FaaSr_py")
 local_run = False
 
-def store_pat_in_env(dictionary):
+def get_secrets_from_secret_manager(project_id, secret_name):
     """
-    Checks if token is present in dict and stores
-    in environment variable "TOKEN" if it is
+    Retrieve secrets from GCP Secret Manager
     """
-    for key, val in dictionary.items():
-        if key.endswith("TOKEN"):
-            os.environ["TOKEN"] = val
-            return True
-    return False
+    try:
+        # Create the Secret Manager client
+        client = secretmanager.SecretManagerServiceClient()
+        
+        # Build the resource name of the secret version
+        name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+        
+        # Access the secret version
+        response = client.access_secret_version(request={"name": name})
+        
+        # Return the decoded payload
+        return json.loads(response.payload.data.decode('UTF-8'))
+    except Exception as e:
+        logger.error(f"Error accessing Secret Manager: {e}")
+        # Fallback to environment variable if available
+        secrets = os.getenv("SECRET_PAYLOAD")
+        if secrets:
+            logger.info("Falling back to SECRET_PAYLOAD environment variable")
+            return json.loads(secrets)
+        return {}
 
 def get_payload_from_env():
     """
-    Get payload from env - same as GitHub Actions
+    Get payload from env - with GCP Secret Manager integration
     """
     payload_url = os.getenv("PAYLOAD_URL")
     overwritten = json.loads(os.getenv("OVERWRITTEN"))
@@ -36,32 +51,27 @@ def get_payload_from_env():
     # determine if secrets should be fetched 
     # from secret store or overwritten payload
     if faasr_payload["ComputeServers"][curr_server].get("UseSecretStore") or local_run:
-        logger.info("Fetching secrets from secret store")
-
-        # get secrets from env
-        secrets = os.getenv("SECRET_PAYLOAD")
-        secrets_dict = json.loads(secrets) if secrets else {}
-        token_present = store_pat_in_env(secrets_dict)
+        logger.info("Fetching secrets from GCP Secret Manager")
+        
+        # Get project ID from compute server config
+        project_id = curr_server["Namespace"]
+        
+        # Get secret name from environment or use default
+        secret_name = os.getenv("GCP_SECRET_NAME", "faasr-secrets")
+        
+        # Get secrets from Secret Manager
+        secrets_dict = get_secrets_from_secret_manager(project_id, secret_name)
+        
+        # Replace values in the payload
         faasr_payload.faasr_replace_values(secrets_dict)
     else:
-        # store token in env for use in fetching file from gh
-        token_present = store_pat_in_env(overwritten)
         logger.info("UseSecretStore off -- using overwritten")
-
-    if not token_present:
-        logger.info("Without a GitHub PAT in your workflow, you may hit rate limits")
     
     return faasr_payload
 
 def main():
     """
     FaaSr entry point for GCP:
-    
-    Same pattern as GitHub Actions for consistency
-    Process payload, validate DAG, ensure datastores are accessible
-    Initialize log and InvocationID if needed
-    Fetch user function, install dependencies, run user function
-    Trigger subsequent functions in the workflow
     """
     start_time = datetime.now()
 
@@ -83,7 +93,7 @@ def main():
     function_result = function_executor.run_func(curr_function, start_time)
     logger.debug(f"Finished execution of {curr_function} with result {function_result}")
 
-    # trigger next functions - use trigger_all for consistency with GitHub Actions
+    # trigger next functions
     scheduler = Scheduler(faasr_payload)
     scheduler.trigger_all(function_result)
 
