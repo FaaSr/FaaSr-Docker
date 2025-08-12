@@ -17,7 +17,7 @@ ARG FAASR_INSTALL_REPO
 RUN pip install "${FAASR_INSTALL_REPO}@${FAASR_VERSION}"
 
 # Install required packages for GCP auth
-RUN pip install cryptography requests
+RUN pip install cryptography requests google-cloud-secretmanager
 
 # GCP specific workdir
 WORKDIR /action
