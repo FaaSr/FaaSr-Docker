@@ -46,7 +46,8 @@ def get_payload_from_env():
     faasr_payload = FaaSrPayload(payload_url, overwritten)
 
     curr_func = faasr_payload["FunctionInvoke"]
-    curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
+    server_name = faasr_payload["ActionList"][curr_func]["FaaSServer"]
+    curr_server = faasr_payload["ComputeServers"][server_name]
 
     # determine if secrets should be fetched 
     # from secret store or overwritten payload
