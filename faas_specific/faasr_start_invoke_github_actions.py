@@ -15,11 +15,13 @@ def store_pat_in_env(dictionary):
     Checks if token is present in dict and stores
     in environment variable "TOKEN" if it is
     """
+    print('storing pat')
     for key, val in dictionary.items():
         if isinstance(val, dict):
             if store_pat_in_env(val):
                 return True
         elif key.lower().endswith("token"):
+            print(f"stored val: {val}")
             os.environ["TOKEN"] = val
             return True
     return False
