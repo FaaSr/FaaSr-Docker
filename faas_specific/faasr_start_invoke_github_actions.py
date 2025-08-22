@@ -95,7 +95,7 @@ def main():
     log_sender = S3LogSender.get_log_sender()
     log_sender.flush_log()
 
-    faasr_msg = f"Finished action -- InvocationID: {faasr_payload["InvocationID"]}"
+    faasr_msg = f"Finished action -- InvocationID: {faasr_payload['InvocationID']}"
     logger.info(faasr_msg)
 
 
