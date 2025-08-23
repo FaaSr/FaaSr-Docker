@@ -13,7 +13,7 @@ ARG FAASR_VERSION
 # FAASR_INSTALL_REPO is tha name of the user's GitHub repository to install FaaSr from e.g. janedoe/faasr-py-dev
 ARG FAASR_INSTALL_REPO
 
-RUN pip install --no-cache-dir aws-lambda-ric \
+RUN pip install --no-cache-dir awslambdaric \
  && pip install --no-cache-dir "git+https://github.com/${FAASR_INSTALL_REPO}.git@${FAASR_VERSION}"
 
 ENTRYPOINT ["python", "-m", "awslambdaric"]
