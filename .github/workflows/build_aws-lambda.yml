@@ -6,9 +6,8 @@ on:
       # BASE_IMAGE is the full user/name:tag of the base FaaSr image (stored in DockerHub) to build from 
       # Examples: janedoe/base-tidyverse:1.1.2, faasr/base-tidyverse:1.1.3
       BASE_IMAGE:
-        description: 'base image e.g. public.ecr.aws/lambda/python:3.13'
+        description: 'base image e.g. nolcut/base-python'
         required: true
-        default: 'public.ecr.aws/lambda/python:3.13'
       # TARGET_NAME is the name of the FaaS-specific image to build
       # Examples: aws-lambda-tidyverse
       TARGET_NAME:

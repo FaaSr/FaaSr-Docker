@@ -22,4 +22,4 @@ RUN pip install --no-cache-dir awslambdaric \
 ENTRYPOINT ["python", "-m", "awslambdaric"]
 
 # Run invoke script
-CMD ["faasr_start_invoke_aws.handler"]
+CMD ["faasr_entry.handler"]
