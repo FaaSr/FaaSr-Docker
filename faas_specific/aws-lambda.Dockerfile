@@ -3,10 +3,13 @@ ARG BASE_IMAGE
 # Start from specified base image
 FROM $BASE_IMAGE
 
+# Set environment variable for platform
+ENV FAASR_PLATFORM="lambda"
+
 # Set working dir to ${LAMBDA_TASK_ROOT}
 WORKDIR /var/task
 
-COPY faas_specific/faasr_start_invoke_aws.py ./
+COPY faasr_entry.py ./
 
 # FAASR_VERSION FaaSr version to install from - this must match a tag in the GitHub repository e.g. 1.1.2
 ARG FAASR_VERSION
