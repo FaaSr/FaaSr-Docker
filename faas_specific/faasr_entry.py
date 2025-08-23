@@ -38,6 +38,10 @@ def handle_slurm():
 
 def handle_lambda(lambda_event):
     """Handles AWS Lambda payload specifics"""
+
+    # change to /tmp for lambda
+    os.chdir("/tmp")
+
     if not lambda_event:
         raise ValueError("Lambda event not provided")
     payload_url = lambda_event["PAYLOAD_URL"]
