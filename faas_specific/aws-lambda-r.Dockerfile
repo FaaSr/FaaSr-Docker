@@ -28,7 +28,7 @@ ARG FAASR_VERSION
 # FAASR_INSTALL_REPO is tha name of the user's GitHub repository to install FaaSr from e.g. janedoe/FaaSr-Package-dev
 ARG FAASR_INSTALL_REPO
 
-RUN pip install "${FAASR_INSTALL_REPO}@${FAASR_VERSION}"
+RUN pip install --no-cache-dir "git+https://github.com/${FAASR_INSTALL_REPO}.git@${FAASR_VERSION}"
 
 # Run invoke script
 CMD ["faasr_start_invoke_aws.handler"]

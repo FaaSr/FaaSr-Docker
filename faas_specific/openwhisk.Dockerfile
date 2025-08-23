@@ -2,8 +2,6 @@
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
 
-#FROM nolcut/faasr-rpc-test:0.1.6
-
 # Create action directory
 RUN mkdir -p /action
 
@@ -16,8 +14,7 @@ ARG FAASR_VERSION
 # FAASR_INSTALL_REPO is tha name of the user's GitHub repository to install FaaSr from e.g. janedoe/FaaSr-Package-dev
 ARG FAASR_INSTALL_REPO
 
-RUN pip install "${FAASR_INSTALL_REPO}@${FAASR_VERSION}"
-#RUN pip install --no-cache-dir git+https://github.com/nolcut/FaaSr-py-dev.git
+RUN pip install --no-cache-dir "git+https://github.com/${FAASR_INSTALL_REPO}.git@${FAASR_VERSION}"
 
 # Setup port
 ENV FLASK_PROXY_PORT 8080

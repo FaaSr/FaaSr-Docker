@@ -1,8 +1,6 @@
 # Stage 1: Build stage
-# ARG BASE_IMAGE
-# FROM $BASE_IMAGE
-
-FROM nolcut/faasr-rpc-test:0.1.6
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
 
 # Create action directory
 RUN mkdir -p /action
@@ -31,8 +29,7 @@ RUN Rscript /tmp/R_packages.R && \
     rm /tmp/R_packages.R && \
     rm -rf /tmp/downloaded_packages/ /tmp/*.rds /tmp/*.tar.gz
 
-# RUN pip install "${FAASR_INSTALL_REPO}@${FAASR_VERSION}"
-RUN pip install --no-cache-dir git+https://github.com/nolcut/FaaSr-py-dev.git
+RUN pip install --no-cache-dir "git+https://github.com/${FAASR_INSTALL_REPO}.git@${FAASR_VERSION}"
 
 # Setup port
 ENV FLASK_PROXY_PORT 8080

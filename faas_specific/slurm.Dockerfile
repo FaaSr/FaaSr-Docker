@@ -14,7 +14,7 @@ ARG FAASR_VERSION
 # FAASR_INSTALL_REPO is the name of the user's GitHub repository to install FaaSr from e.g. janedoe/FaaSr-Package-dev
 ARG FAASR_INSTALL_REPO
 
-RUN pip install "${FAASR_INSTALL_REPO}@${FAASR_VERSION}"
+RUN pip install --no-cache-dir "git+https://github.com/${FAASR_INSTALL_REPO}.git@${FAASR_VERSION}"
 
 # Install required packages for SLURM auth
 RUN pip install requests pyjwt

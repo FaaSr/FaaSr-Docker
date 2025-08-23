@@ -22,7 +22,7 @@ on:
       FAASR_INSTALL_REPO:
         description: 'GitHub repo to install FaaSr-py from'
         required: true
-        default: 'git+https://github.com/nolcut/FaaSr-py-dev.git'
+        default: 'FaaSr/FaaSr-Backend'
       # GHCR_IO_REPO is the GitHub Container Repository (GHCR) to push image to
       GHCR_IO_REPO:
         description: 'GitHub Container Repository (GHCR) to push image to'

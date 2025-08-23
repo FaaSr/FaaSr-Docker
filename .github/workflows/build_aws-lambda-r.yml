@@ -25,7 +25,7 @@ on:
       FAASR_INSTALL_REPO:
         description: 'GitHub repo to install FaaSr from'
         required: true
-        default: 'git+https://github.com/nolcut/FaaSr-py-dev.git'
+        default: 'FaaSr/FaaSr-Backend'
       # AWS_REGION is the AWS ECR region to push image to
       # Examples: us-east-1
       AWS_REGION:
