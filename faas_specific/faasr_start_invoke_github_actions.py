@@ -4,7 +4,8 @@ import os
 import uuid
 from datetime import datetime
 
-from FaaSr_py import Executor, FaaSrPayload, S3LogSender, Scheduler, global_config
+from FaaSr_py import (Executor, FaaSrPayload, S3LogSender, Scheduler,
+                      global_config)
 
 logger = logging.getLogger("FaaSr_py")
 local_run = False
@@ -15,17 +16,14 @@ def store_pat_in_env(dictionary):
     Checks if token is present in dict and stores
     in environment variable "TOKEN" if it is
     """
-    print('storing pat')
     for key, val in dictionary.items():
         if isinstance(val, dict):
             if store_pat_in_env(val):
                 return True
         elif key.lower().endswith("token"):
-            print(f"stored val: {val}")
             os.environ["TOKEN"] = val
             return True
     return False
-
 
 def get_payload_from_env():
     """
@@ -40,7 +38,7 @@ def get_payload_from_env():
     curr_func = faasr_payload["FunctionInvoke"]
     curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
 
-    # determine if secrets should be fetched
+    # determine if secrets should be fetched 
     # from secret store or overwritten payload
     if faasr_payload["ComputeServers"][curr_server].get("UseSecretStore") or local_run:
         logger.info("Fetching secrets from secret store")
@@ -56,7 +54,7 @@ def get_payload_from_env():
         logger.info("UseSecretStore off -- using overwritten")
 
     if not token_present:
-        logger.info("Without a GitHub PAT in your workflow, you may hit rate limits")
+            logger.info("Without a GitHub PAT in your workflow, you may hit rate limits")
     return faasr_payload
 
 
@@ -97,9 +95,8 @@ def main():
     log_sender = S3LogSender.get_log_sender()
     log_sender.flush_log()
 
-    faasr_msg = f"Finished action -- InvocationID: {faasr_payload['InvocationID']}"
+    faasr_msg = f"Finished action -- InvocationID: {faasr_payload["InvocationID"]}"
     logger.info(faasr_msg)
-
 
 if __name__ == "__main__":
     main()
