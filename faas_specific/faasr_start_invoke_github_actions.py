@@ -54,7 +54,7 @@ def get_payload_from_env():
         logger.info("UseSecretStore off -- using overwritten")
 
     if not token_present:
-            logger.info("Without a GitHub PAT in your workflow, you may hit rate limits")
+        logger.info("Without a GitHub PAT in your workflow, you may hit rate limits")
     return faasr_payload
 
 
