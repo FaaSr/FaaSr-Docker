@@ -6,9 +6,6 @@ FROM $BASE_IMAGE
 # Copy invoke functions
 COPY faas_specific/faasr_start_invoke_aws.py ${LAMBDA_TASK_ROOT}
 
-RUN dnf install -y R git cmake tar
-RUN dnf clean all
-
 # FAASR_VERSION FaaSr version to install from - this must match a tag in the GitHub repository e.g. 1.1.2
 ARG FAASR_VERSION
 # FAASR_INSTALL_REPO is tha name of the user's GitHub repository to install FaaSr from e.g. janedoe/faasr-py-dev
