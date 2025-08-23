@@ -22,4 +22,4 @@ RUN pip install --no-cache-dir "git+https://github.com/${FAASR_INSTALL_REPO}.git
 # GitHub Actions specifics
 WORKDIR /action
 
-CMD ["python3", "faasr_start_invoke_github-actions.py"]
+CMD ["python3", "faasr_entry.py"]
