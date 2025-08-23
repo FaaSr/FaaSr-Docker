@@ -1,0 +1,8 @@
+install.packages('remotes', repos='https://cloud.R-project.org')
+remotes::install_version('jsonlite', version='1.8.7', repos='https://cloud.R-project.org')
+remotes::install_version('devtools', version='2.4.5', repos='https://cloud.R-project.org')
+remotes::install_version('RCurl', version='1.98-1.12', repos='https://cloud.R-project.org')
+remotes::install_version('httr', version='1.4.6', repos='https://cloud.R-project.org')
+remotes::install_version('uuid', version='1.1-0', repos='https://cloud.R-project.org')
+remotes::install_version('arrow', version='13.0.0.1', repos='https://cloud.R-project.org')
+remotes::install_version('sodium', version='1.3.1', repos='https://cloud.R-project.org')

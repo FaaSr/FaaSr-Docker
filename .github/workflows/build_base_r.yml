@@ -1,4 +1,4 @@
-name: py-base -> DockerHub
+name: r-base -> DockerHub
   # This action builds a base python image for use in FaaSr
   # It requires you to have your DOCKERHUB_USERNAME and DOCKERHUB_TOKEN configured as secrets
   # The base image can be build from a Python image input as BUILD_FROM
@@ -16,7 +16,7 @@ on:
       BASE_NAME:
         description: 'name to be used for this base FaaSr image'
         required: true
-        default: 'base-python'
+        default: 'base-r'
       # FAASR_PY_VERSION is the FaaSr-py version tag to be used for this base FaaSr image
       FAASR_VERSION:
         description: 'FaaSr-py version'
@@ -25,7 +25,7 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 120
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
       - name: Build base FaaSr Docker image
         run: |
           cd base
-          docker build -f base.Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.BASE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BUILD_FROM=${{ github.event.inputs.BUILD_FROM }} .
+          docker build -f base-r.Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.BASE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BUILD_FROM=${{ github.event.inputs.BUILD_FROM }} .
       - name: Push base FaaSr Docker image
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.BASE_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
