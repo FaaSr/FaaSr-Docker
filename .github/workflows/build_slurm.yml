@@ -1,19 +1,16 @@
 name: py-slurm -> DockerHub
-
 on: 
   workflow_dispatch:
     inputs:
       # BASE_IMAGE is the full user/name:tag of the base FaaSr image (stored in DockerHub) to build from 
       BASE_IMAGE:
-        description: 'user/name:tag of the base FaaSr image e.g. janedoe/base-python:0.1.0'
+        description: 'user/name:tag of the base FaaSr image e.g. faasr/base:latest'
         required: true
-        default: 'nolcut/faasr-rpc-test:0.1.6'
       # TARGET_NAME is the name of the FaaS-specific image to build
       # Examples: slurm-python
       TARGET_NAME:
         description: 'name of the FaaS-specific image to build'
         required: true
-        default: 'slurm-python'
       # FAASR_VERSION is the FaaSr-py version tag to be used for this base FaaSr image
       FAASR_VERSION:
         description: 'FaaSr-py version'
@@ -23,34 +20,30 @@ on:
         description: 'GitHub repo to install FaaSr-py from'
         required: true
         default: 'FaaSr/FaaSr-Backend'
-
+      # DOCKERHUB_REPO is the DockerHub repository to push image to
+      DOCKERHUB_REPO:
+        description: 'DockerHub repository to push image to'
+        required: true
+        default: 'faasr'
 permissions: write-all
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: main
-      
-      - name: Login to Docker Hub
+      - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
-      - name: Build SLURM Container image
+      - name: Build slurm Container image
         run: |
           cd faas_specific
-          docker build -f slurm.Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BASE_IMAGE=${{ github.event.inputs.BASE_IMAGE }} --build-arg FAASR_VERSION=${{ github.event.inputs.FAASR_VERSION }} --build-arg FAASR_INSTALL_REPO=${{ github.event.inputs.FAASR_INSTALL_REPO }} .
-      
-      - name: Push SLURM image to Docker Hub
+          docker build -f slurm.Dockerfile -t ${{ github.event.inputs.DOCKERHUB_REPO }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BASE_IMAGE=${{ github.event.inputs.BASE_IMAGE }} --build-arg FAASR_VERSION=${{ github.event.inputs.FAASR_VERSION }} --build-arg FAASR_INSTALL_REPO=${{ github.event.inputs.FAASR_INSTALL_REPO }} .
+      - name: Push slurm image to DockerHub
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
-      
-      - name: Tag and push as latest
-        run: |
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:latest
+          docker push ${{ github.event.inputs.DOCKERHUB_REPO }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
