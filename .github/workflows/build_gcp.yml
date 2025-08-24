@@ -5,15 +5,13 @@ on:
     inputs:
       # BASE_IMAGE is the full user/name:tag of the base FaaSr image (stored in DockerHub) to build from 
       BASE_IMAGE:
-        description: 'user/name:tag of the base FaaSr image e.g. janedoe/base-python:0.1.0'
+        description: 'user/name:tag of the base FaaSr image e.g. faasr/base:latest'
         required: true
-        default: 'nolcut/faasr-rpc-test:0.1.6'
       # TARGET_NAME is the name of the FaaS-specific image to build
-      # Examples: gcp-python
+      # Examples: github-actions-python
       TARGET_NAME:
         description: 'name of the FaaS-specific image to build'
         required: true
-        default: 'gcp-python'
       # FAASR_VERSION is the FaaSr-py version tag to be used for this base FaaSr image
       FAASR_VERSION:
         description: 'FaaSr-py version'
