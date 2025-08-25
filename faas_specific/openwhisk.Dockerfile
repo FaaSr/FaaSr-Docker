@@ -6,7 +6,7 @@ FROM $BASE_IMAGE
 RUN mkdir -p /action
 
 # Copy invocation scripts
-COPY faasr_start_invoke_openwhisk.py /action/exec
+COPY faasr_entry.py /action/exec
 RUN chmod +x /action/exec
 
 # FAASR_VERSION FaaSr version to install from - this must match a tag in the GitHub repository e.g. 1.1.2
@@ -17,7 +17,10 @@ ARG FAASR_INSTALL_REPO
 RUN pip install --no-cache-dir "git+https://github.com/${FAASR_INSTALL_REPO}.git@${FAASR_VERSION}"
 
 # Setup port
-ENV FLASK_PROXY_PORT 8080
+ENV FLASK_PROXY_PORT=8080
+
+# Set environment variable for platform
+ENV FAASR_PLATFORM="openwhisk"
 
 # Openwhisk actionProxy
 RUN mkdir -p /actionProxy/owplatform

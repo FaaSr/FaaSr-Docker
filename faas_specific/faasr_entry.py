@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
 import json
 import logging
 import os
+import sys
 import uuid
 from datetime import datetime
+
 
 
 
@@ -134,8 +137,17 @@ def handle_lambda(lambda_event):
 
 def handle_ow():
     """Handles OpenWhisk payload specifics"""
-    print("not implemented")
 
+    # Get payload from command line argument
+
+    payload = json.loads(sys.argv[1])
+
+    payload_url = payload["PAYLOAD_URL"]
+    overwritten = payload["OVERWRITTEN"]
+
+    logger.debug(f"Payload URL: {payload_url}")
+
+    return FaaSrPayload(payload_url, overwritten)
 
 def handle_gh():
     """Handles GitHub Actions payload specifics"""
