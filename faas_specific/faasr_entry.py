@@ -6,9 +6,6 @@ import sys
 import uuid
 from datetime import datetime
 
-
-
-
 from FaaSr_py import (Executor, FaaSrPayload, S3LogSender, Scheduler,
                       global_config)
 
@@ -28,7 +25,7 @@ def store_pat_in_env(dictionary):
         elif key.lower().endswith("token"):
             os.environ["TOKEN"] = val
             return True
-    return 
+    return
 
 
 def get_secrets_from_secret_manager(project_id, secret_name):
@@ -36,20 +33,20 @@ def get_secrets_from_secret_manager(project_id, secret_name):
     Retrieve secrets from GCP Secret Manager
     """
     try:
-        
+
         from google.cloud import secretmanager
-        
+
         # Create the Secret Manager client
         client = secretmanager.SecretManagerServiceClient()
-        
+
         # Build the resource name of the secret version
         name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
-        
+
         # Access the secret version
         response = client.access_secret_version(request={"name": name})
-        
+
         # Return the decoded payload
-        return json.loads(response.payload.data.decode('UTF-8'))
+        return json.loads(response.payload.data.decode("UTF-8"))
     except Exception as e:
         logger.error(f"Error accessing Secret Manager: {e}")
         # Fallback to environment variable if available
@@ -60,64 +57,52 @@ def get_secrets_from_secret_manager(project_id, secret_name):
         return {}
 
 
+def get_secrets_from_env(faasr_payload):
+    """
+    Retrieve secrets from environment variable
+    """
+    platform = os.getenv("FAASR_PLATFORM").lower()
+    curr_func = faasr_payload["FunctionInvoke"]
+    curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
+
+    match (platform):
+        case "gcp":
+            project_id = faasr_payload["ComputeServers"][curr_server]["Namespace"]
+
+            # Get secret name from environment or use default
+            secret_name = os.getenv("GCP_SECRET_NAME", "faasr-secrets")
+
+            # Get secrets from Secret Manager
+            secrets_dict = get_secrets_from_secret_manager(project_id, secret_name)
+        case "github" | "slurm" | "lambda" | "openwhisk":
+            # get secrets from env
+            secrets = os.getenv("SECRET_PAYLOAD")
+            if secrets:
+                secrets_dict = json.loads(secrets)
+            else:
+                logger.critical("No SECRET_PAYLOAD found in environment")
+                raise ValueError("No SECRET_PAYLOAD found in environment")
+        case _:
+            raise ValueError(f"Unsupported platform: {platform}")
+    return secrets_dict
+
+
 def handle_gcp():
     """Handles GCP payload specifics"""
     payload_url = os.getenv("PAYLOAD_URL")
     overwritten = json.loads(os.getenv("OVERWRITTEN"))
-    
+
     logger.debug(f"Payload URL: {payload_url}")
-    faasr_payload = FaaSrPayload(payload_url, overwritten)
-    
-    curr_func = faasr_payload["FunctionInvoke"]
-    curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
-    
-    # determine if secrets should be fetched 
-    # from secret store or overwritten payload
-    if faasr_payload["ComputeServers"][curr_server].get("UseSecretStore") or local_run:
-        logger.info("Fetching secrets from GCP Secret Manager")
-        
-        # Get project ID from compute server config
-        project_id = faasr_payload["ComputeServers"][curr_server]["Namespace"]
-        
-        # Get secret name from environment or use default
-        secret_name = os.getenv("GCP_SECRET_NAME", "faasr-secrets")
-        
-        # Get secrets from Secret Manager
-        secrets_dict = get_secrets_from_secret_manager(project_id, secret_name)
-        
-        # Replace values in the payload
-        faasr_payload.faasr_replace_values(secrets_dict)
-    else:
-        logger.info("UseSecretStore off -- using overwritten")
-    
-    return faasr_payload
+    return FaaSrPayload(payload_url, overwritten)
 
 
 def handle_slurm():
     """Handles SLURM payload specifics"""
     payload_url = os.getenv("PAYLOAD_URL")
     overwritten = json.loads(os.getenv("OVERWRITTEN", "{}"))
-    
+
     logger.debug(f"Payload URL: {payload_url}")
-    faasr_payload = FaaSrPayload(payload_url, overwritten)
-    
-    curr_func = faasr_payload["FunctionInvoke"]
-    curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
-    
-    # determine if secrets should be fetched from secret store or overwritten payload
-    if faasr_payload["ComputeServers"][curr_server].get("UseSecretStore", False) or local_run:
-        logger.info("Fetching secrets from environment")
-        
-        # get secrets from env
-        secrets = os.getenv("SECRET_PAYLOAD")
-        if secrets:
-            faasr_payload.faasr_replace_values(json.loads(secrets))
-        else:
-            logger.warning("No SECRET_PAYLOAD found in environment")
-    else:
-        logger.info("UseSecretStore off -- using overwritten")
-    
-    return faasr_payload
+    return FaaSrPayload(payload_url, overwritten)
 
 
 def handle_lambda(lambda_event):
@@ -148,6 +133,7 @@ def handle_ow():
     logger.debug(f"Payload URL: {payload_url}")
 
     return FaaSrPayload(payload_url, overwritten)
+
 
 def handle_gh():
     """Handles GitHub Actions payload specifics"""
@@ -181,19 +167,18 @@ def get_payload_from_env(lambda_event=None):
         case _:
             raise ValueError(f"Unsupported platform: {platform}")
 
-
     curr_func = faasr_payload["FunctionInvoke"]
     curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
 
-    # determine if secrets should be fetched 
+    # determine if secrets should be fetched
     # from secret store or overwritten payload
     if faasr_payload["ComputeServers"][curr_server].get("UseSecretStore") or local_run:
         logger.info("Fetching secrets from secret store")
 
-        # get secrets from env
-        secrets = os.getenv("SECRET_PAYLOAD")
-        secrets_dict = json.loads(secrets)
+        secrets_dict = get_secrets_from_env(faasr_payload)
+
         token_present = store_pat_in_env(secrets_dict)
+
         faasr_payload.faasr_replace_values(secrets_dict)
     else:
         # store token in env for use in fetching file from gh

@@ -1,13 +1,15 @@
 import json
-import uuid
-import os
 import logging
+import os
+import uuid
 from datetime import datetime
 
-from FaaSr_py import (FaaSrPayload, Scheduler, Executor, global_config, S3LogSender)
+from FaaSr_py import (Executor, FaaSrPayload, S3LogSender, Scheduler,
+                      global_config)
 
 logger = logging.getLogger("FaaSr_py")
 local_run = False
+
 
 def get_payload_from_env():
     """
@@ -15,17 +17,20 @@ def get_payload_from_env():
     """
     payload_url = os.getenv("PAYLOAD_URL")
     overwritten = json.loads(os.getenv("OVERWRITTEN", "{}"))
-    
+
     logger.debug(f"Payload URL: {payload_url}")
     faasr_payload = FaaSrPayload(payload_url, overwritten)
-    
+
     curr_func = faasr_payload["FunctionInvoke"]
     curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
-    
+
     # determine if secrets should be fetched from secret store or overwritten payload
-    if faasr_payload["ComputeServers"][curr_server].get("UseSecretStore", False) or local_run:
+    if (
+        faasr_payload["ComputeServers"][curr_server].get("UseSecretStore", False)
+        or local_run
+    ):
         logger.info("Fetching secrets from environment")
-        
+
         # get secrets from env
         secrets = os.getenv("SECRET_PAYLOAD")
         if secrets:
@@ -34,13 +39,14 @@ def get_payload_from_env():
             logger.warning("No SECRET_PAYLOAD found in environment")
     else:
         logger.info("UseSecretStore off -- using overwritten")
-    
+
     return faasr_payload
+
 
 def main():
     """
     FaaSr entry point for SLURM:
-    
+
     Process payload
     Validate DAG, ensure datastores are accesible
     Initialize log and InvocationID if needed
@@ -76,6 +82,7 @@ def main():
 
     faasr_msg = f"Finished action -- InvocationID: {faasr_payload['InvocationID']}"
     logger.info(faasr_msg)
+
 
 if __name__ == "__main__":
     main()
