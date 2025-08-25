@@ -3,7 +3,6 @@ import logging
 import os
 import uuid
 from datetime import datetime
-from google.cloud import secretmanager
 
 
 
@@ -34,6 +33,9 @@ def get_secrets_from_secret_manager(project_id, secret_name):
     Retrieve secrets from GCP Secret Manager
     """
     try:
+        
+        from google.cloud import secretmanager
+        
         # Create the Secret Manager client
         client = secretmanager.SecretManagerServiceClient()
         
