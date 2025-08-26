@@ -1,4 +1,4 @@
-name: py-slurm -> DockerHub
+name: slurm -> DockerHub
 on: 
   workflow_dispatch:
     inputs:
