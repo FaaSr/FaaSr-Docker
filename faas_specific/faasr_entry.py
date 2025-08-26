@@ -107,7 +107,6 @@ def handle_slurm():
 
 def handle_lambda(lambda_event):
     """Handles AWS Lambda payload specifics"""
-
     # change to /tmp for lambda
     os.chdir("/tmp")
 
@@ -122,9 +121,7 @@ def handle_lambda(lambda_event):
 
 def handle_ow():
     """Handles OpenWhisk payload specifics"""
-
     # Get payload from command line argument
-
     payload = json.loads(sys.argv[1])
 
     payload_url = payload["PAYLOAD_URL"]
