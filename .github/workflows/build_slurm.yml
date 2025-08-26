@@ -20,11 +20,6 @@ on:
         description: 'GitHub repo to install FaaSr-py from'
         required: true
         default: 'FaaSr/FaaSr-Backend'
-      # DOCKERHUB_REPO is the DockerHub repository to push image to
-      DOCKERHUB_REPO:
-        description: 'DockerHub repository to push image to'
-        required: true
-        default: 'faasr'
 permissions: write-all
 jobs:
   build-and-push:
@@ -43,7 +38,12 @@ jobs:
       - name: Build slurm Container image
         run: |
           cd faas_specific
-          docker build -f slurm.Dockerfile -t ${{ github.event.inputs.DOCKERHUB_REPO }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BASE_IMAGE=${{ github.event.inputs.BASE_IMAGE }} --build-arg FAASR_VERSION=${{ github.event.inputs.FAASR_VERSION }} --build-arg FAASR_INSTALL_REPO=${{ github.event.inputs.FAASR_INSTALL_REPO }} .
+          docker build -f slurm.Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BASE_IMAGE=${{ github.event.inputs.BASE_IMAGE }} --build-arg FAASR_VERSION=${{ github.event.inputs.FAASR_VERSION }} --build-arg FAASR_INSTALL_REPO=${{ github.event.inputs.FAASR_INSTALL_REPO }} .
       - name: Push slurm image to DockerHub
         run: |
-          docker push ${{ github.event.inputs.DOCKERHUB_REPO }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
+      
+      - name: Tag and push as latest
+        run: |
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:latest
