@@ -8,13 +8,11 @@ on:
       BASE_IMAGE:
         description: 'base image e.g. public.ecr.aws/lambda/python:3.13'
         required: true
-        default: 'nolcut/faasr-rpc-test:0.1.6'
       # TARGET_NAME is the name of the FaaS-specific image to build
       # Examples: aws-lambda-tidyverse
       TARGET_NAME:
         description: 'name of the FaaS-specific image to build'
         required: true
-        default: 'openwhisk-python'
       # FAASR_VERSION is the FaaSr version tag to be used for this base FaaSr image
       # Examples: 1.1.2, 1.3.1
       FAASR_VERSION:
