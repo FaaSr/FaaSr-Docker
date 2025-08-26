@@ -1,5 +1,4 @@
 name: gcp -> DockerHub
-
 on: 
   workflow_dispatch:
     inputs:
@@ -21,12 +20,11 @@ on:
         description: 'GitHub repo to install FaaSr-py from'
         required: true
         default: 'FaaSr/FaaSr-Backend'
-
 permissions: write-all
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
