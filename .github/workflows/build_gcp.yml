@@ -1,4 +1,4 @@
-name: py-gcp -> DockerHub
+name: gcp -> DockerHub
 
 on: 
   workflow_dispatch:
