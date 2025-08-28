@@ -220,7 +220,7 @@ def handler(event=None, context=None):
 
     # trigger next functions
     scheduler = Scheduler(faasr_payload)
-    scheduler.trigger_all(function_result)
+    scheduler.trigger_all(workflow_name=faasr_payload["WorkflowName"], return_val=function_result)
 
     log_sender = S3LogSender.get_log_sender()
     log_sender.flush_log()
