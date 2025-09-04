@@ -22,7 +22,7 @@ def store_pat_in_env(dictionary):
         if isinstance(val, dict):
             if store_pat_in_env(val):
                 return True
-        elif key.lower().endswith("token"):
+        elif key.lower().endswith("pat"):
             os.environ["TOKEN"] = val
             return True
     return
@@ -57,6 +57,90 @@ def get_secrets_from_secret_manager(project_id, secret_name):
         return {}
 
 
+def fetch_derived_secrets_env(faasr_payload):
+    """
+    Fetches secrets from env using keys derived from the datastore and computeserver names
+
+    Example keys:
+    OW
+        OW_API.key
+    AWS
+        AWS_AccessKey
+        AWS_SecretKey
+    GCP
+        GCP_SecretKey
+    SLURM
+        SLURM_Token
+    GH
+        GH_PAT
+    Minio
+        Minio_AccessKey
+        Minio_SecretKey
+
+    Arguments:
+        payload -- faasr payload
+
+    Return:
+        secrets dict -- dictionary mapping derived keys to actual secrets
+    """
+    secrets_dict = {}
+    for name, fields in faasr_payload["ComputeServers"].items():
+        server_type = fields["FaaSType"]
+
+        match server_type:
+            case "GitHubActions":
+                pat = os.getenv(f"{name}_PAT")
+                if pat is None:
+                    logger.warning(f"{name}_PAT is missing from env")
+                secrets_dict[f"{name}_PAT"] = pat
+
+            case "Lambda":
+                access_key = os.getenv(f"{name}_AccessKey")
+                secret_key = os.getenv(f"{name}_SecretKey")
+
+                if access_key is None:
+                    logger.warning(f"{name}_AccessKey is missing from env")
+                if secret_key is None:
+                    logger.warning(f"{name}_SecretKey is missing from env")
+
+                secrets_dict[f"{name}_AccessKey"] = access_key
+                secrets_dict[f"{name}_SecretKey"] = secret_key
+
+            case "GCP":
+                secret_key = os.getenv(f"{name}_SecretKey")
+                if secret_key is None:
+                    logger.warning(f"{name}_SecretKey is missing from env")
+                secrets_dict[f"{name}_SecretKey"] = secret_key
+
+            case "SLURM":
+                token = os.getenv(f"{name}_Token")
+                if token is None:
+                    logger.warning(f"{name}_Token is missing from env")
+                secrets_dict[f"{name}_Token"] = token
+
+            case "OpenWhisk":
+                api_key = os.getenv(f"{name}_API.key")
+                if api_key is None:
+                    logger.warning(f"{name}_API.key is missing from env")
+                secrets_dict[f"{name}_API.key"] = api_key
+
+            case _:
+                logger.warning(f"Unkown FaaSType for {name}: {server_type}")
+
+    for name, fields in faasr_payload["DataStores"].items():
+        access_key = os.getenv(f"{name}_AccessKey")
+        secret_key = os.getenv(f"{name}_SecretKey")
+
+        if access_key is None:
+            logger.warning(f"{name}_AccessKey is missing from env")
+        if secret_key is None:
+            logger.warning(f"{name}_SecretKey is missing from env")
+
+        secrets_dict[f"{name}_AccessKey"] = access_key
+        secrets_dict[f"{name}_SecretKey"] = secret_key
+    return secrets_dict
+
+
 def get_secrets_from_env(faasr_payload):
     """
     Retrieve secrets from environment variable
@@ -76,12 +160,7 @@ def get_secrets_from_env(faasr_payload):
             secrets_dict = get_secrets_from_secret_manager(project_id, secret_name)
         case "github" | "slurm" | "lambda" | "openwhisk":
             # get secrets from env
-            secrets = os.getenv("SECRET_PAYLOAD")
-            if secrets:
-                secrets_dict = json.loads(secrets)
-            else:
-                logger.critical("No SECRET_PAYLOAD found in environment")
-                raise ValueError("No SECRET_PAYLOAD found in environment")
+            secrets_dict = fetch_derived_secrets_env(faasr_payload)
         case _:
             raise ValueError(f"Unsupported platform: {platform}")
     return secrets_dict
@@ -176,7 +255,7 @@ def get_payload_from_env(lambda_event=None):
 
         token_present = store_pat_in_env(secrets_dict)
 
-        faasr_payload.faasr_replace_values(secrets_dict)
+        faasr_payload.replace_secrets(secrets_dict)
     else:
         # store token in env for use in fetching file from gh
         token_present = store_pat_in_env(faasr_payload.overwritten["ComputeServers"])
@@ -220,7 +299,9 @@ def handler(event=None, context=None):
 
     # trigger next functions
     scheduler = Scheduler(faasr_payload)
-    scheduler.trigger_all(workflow_name=faasr_payload["WorkflowName"], return_val=function_result)
+    scheduler.trigger_all(
+        workflow_name=faasr_payload["WorkflowName"], return_val=function_result
+    )
 
     log_sender = S3LogSender.get_log_sender()
     log_sender.flush_log()
