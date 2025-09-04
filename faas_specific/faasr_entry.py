@@ -6,8 +6,7 @@ import sys
 import uuid
 from datetime import datetime
 
-from FaaSr_py import (Executor, FaaSrPayload, S3LogSender, Scheduler,
-                      global_config)
+from FaaSr_py import Executor, FaaSrPayload, S3LogSender, Scheduler, global_config
 
 logger = logging.getLogger("FaaSr_py")
 local_run = False
@@ -57,7 +56,32 @@ def get_secrets_from_secret_manager(project_id, secret_name):
         return {}
 
 
-def fetch_derived_secrets_env(faasr_payload):
+def get_secret(key):
+    """
+    Retrieve a single secret from environment variable
+    """
+    platform = os.getenv("FAASR_PLATFORM").lower()
+
+    match platform:
+        case "gcp":
+            raise NotImplementedError("GCP fetch not implemented")
+        case "lambda":
+            logger.info("Fetching secrets from env for lambda. to-do: fetch from secret manager")
+            secret = os.getenv(key)
+            if secret is None:
+                logger.warning(f"{key} is missing from env")
+            return secret
+        case "github" | "slurm" | "openwhisk":
+            # get secret from env
+            secret = os.getenv(key)
+            if secret is None:
+                logger.warning(f"{key} is missing from env")
+            return secret
+        case _:
+            raise ValueError(f"Unsupported platform: {platform}")
+
+
+def fetch_derived_secrets(faasr_payload):
     """
     Fetches secrets from env using keys derived from the datastore and computeserver names
 
@@ -84,60 +108,48 @@ def fetch_derived_secrets_env(faasr_payload):
         secrets dict -- dictionary mapping derived keys to actual secrets
     """
     secrets_dict = {}
+
+    # Compute servers
     for name, fields in faasr_payload["ComputeServers"].items():
         server_type = fields["FaaSType"]
 
         match server_type:
             case "GitHubActions":
-                pat = os.getenv(f"{name}_PAT")
-                if pat is None:
-                    logger.warning(f"{name}_PAT is missing from env")
-                secrets_dict[f"{name}_PAT"] = pat
+                key = f"{name}_PAT"
+                secrets_dict[key] = get_secret(key)
 
             case "Lambda":
-                access_key = os.getenv(f"{name}_AccessKey")
-                secret_key = os.getenv(f"{name}_SecretKey")
-
-                if access_key is None:
-                    logger.warning(f"{name}_AccessKey is missing from env")
-                if secret_key is None:
-                    logger.warning(f"{name}_SecretKey is missing from env")
-
-                secrets_dict[f"{name}_AccessKey"] = access_key
-                secrets_dict[f"{name}_SecretKey"] = secret_key
+                access_key = f"{name}_AccessKey"
+                secret_key = f"{name}_SecretKey"
+                secrets_dict[access_key] = get_secret(access_key)
+                secrets_dict[secret_key] = get_secret(secret_key)
 
             case "GCP":
-                secret_key = os.getenv(f"{name}_SecretKey")
-                if secret_key is None:
-                    logger.warning(f"{name}_SecretKey is missing from env")
-                secrets_dict[f"{name}_SecretKey"] = secret_key
+                secret_key = f"{name}_SecretKey"
+                secrets_dict[secret_key] = get_secret(secret_key)
 
             case "SLURM":
-                token = os.getenv(f"{name}_Token")
-                if token is None:
-                    logger.warning(f"{name}_Token is missing from env")
-                secrets_dict[f"{name}_Token"] = token
+                token = f"{name}_Token"
+                secrets_dict[token] = get_secret(token)
 
             case "OpenWhisk":
-                api_key = os.getenv(f"{name}_API.key")
-                if api_key is None:
-                    logger.warning(f"{name}_API.key is missing from env")
-                secrets_dict[f"{name}_API.key"] = api_key
+                dot_key = f"{name}_API.key"
+                us_key = f"{name}_API_KEY"
+                val = get_secret(dot_key)
+                if val is None:
+                    val = get_secret(us_key)
+                secrets_dict[dot_key] = val
 
             case _:
-                logger.warning(f"Unkown FaaSType for {name}: {server_type}")
+                logger.warning(f"Unknown FaaSType for {name}: {server_type}")
 
-    for name, fields in faasr_payload["DataStores"].items():
-        access_key = os.getenv(f"{name}_AccessKey")
-        secret_key = os.getenv(f"{name}_SecretKey")
+    # Data stores
+    for name in faasr_payload["DataStores"].keys():
+        access_key = f"{name}_AccessKey"
+        secret_key = f"{name}_SecretKey"
+        secrets_dict[access_key] = get_secret(access_key)
+        secrets_dict[secret_key] = get_secret(secret_key)
 
-        if access_key is None:
-            logger.warning(f"{name}_AccessKey is missing from env")
-        if secret_key is None:
-            logger.warning(f"{name}_SecretKey is missing from env")
-
-        secrets_dict[f"{name}_AccessKey"] = access_key
-        secrets_dict[f"{name}_SecretKey"] = secret_key
     return secrets_dict
 
 
@@ -160,7 +172,7 @@ def get_secrets_from_env(faasr_payload):
             secrets_dict = get_secrets_from_secret_manager(project_id, secret_name)
         case "github" | "slurm" | "lambda" | "openwhisk":
             # get secrets from env
-            secrets_dict = fetch_derived_secrets_env(faasr_payload)
+            secrets_dict = fetch_derived_secrets(faasr_payload)
         case _:
             raise ValueError(f"Unsupported platform: {platform}")
     return secrets_dict

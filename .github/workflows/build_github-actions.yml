@@ -1,4 +1,4 @@
-name: py-github-actions -> GHCR
+name: github-actions -> GHCR
 
 on: 
   workflow_dispatch:
