@@ -42,8 +42,3 @@ jobs:
       - name: Push slurm image to DockerHub
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
-      
-      - name: Tag and push as latest
-        run: |
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:latest
