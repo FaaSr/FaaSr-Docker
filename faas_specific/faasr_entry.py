@@ -6,6 +6,7 @@ import sys
 import uuid
 from datetime import datetime
 
+import boto3
 from FaaSr_py import Executor, FaaSrPayload, S3LogSender, Scheduler, global_config
 
 logger = logging.getLogger("FaaSr_py")
@@ -60,16 +61,30 @@ def get_secret(key):
     """
     Retrieve a single secret from environment variable
     """
-    platform = os.getenv("FAASR_PLATFORM").lower()
+    platform = os.getenv("FAASR_PLATFORM")
+
+    if platform is None:
+        raise ValueError("FaaSr Environment Errror: FAASR_PLATFORM not set")
+    else:
+        platform = platform.lower()
 
     match platform:
         case "gcp":
             raise NotImplementedError("GCP fetch not implemented")
         case "lambda":
-            logger.info("Fetching secrets from env for lambda. to-do: fetch from secret manager")
-            secret = os.getenv(key)
+            region = os.getenv("AWS_REGION", "us-east-1")
+            secret_manager_client = boto3.client(
+                service_name="secretsmanager",
+                region_name=region,
+            )
+
+            secret = secret_manager_client.get_secret_value(SecretId=key).get(
+                "SecretString"
+            )
+
             if secret is None:
-                logger.warning(f"{key} is missing from env")
+                logger.warning(f"{key} is missing from AWS Secret Manager")
+
             return secret
         case "github" | "slurm" | "openwhisk":
             # get secret from env
@@ -80,7 +95,7 @@ def get_secret(key):
         case _:
             raise ValueError(f"Unsupported platform: {platform}")
 
-
+    
 def fetch_derived_secrets(faasr_payload):
     """
     Fetches secrets from env using keys derived from the datastore and computeserver names
