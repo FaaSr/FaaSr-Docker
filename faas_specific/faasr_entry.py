@@ -57,7 +57,7 @@ def get_secrets_from_secret_manager(project_id, secret_name):
         return {}
 
 
-def get_secret(key):
+def get_secret(key,faasr_payload=None):
     """
     Retrieve a single secret from environment variable
     """
@@ -70,7 +70,31 @@ def get_secret(key):
 
     match platform:
         case "gcp":
-            raise NotImplementedError("GCP fetch not implemented")
+            try:
+                from google.cloud import secretmanager
+                
+                # Get project ID from payload
+                curr_func = faasr_payload["FunctionInvoke"]
+                curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
+                project_id = faasr_payload["ComputeServers"][curr_server]["Namespace"]
+                
+                # Create the Secret Manager client
+                client = secretmanager.SecretManagerServiceClient()
+                
+                # Build the resource name of the secret version
+                name = f"projects/{project_id}/secrets/{key}/versions/latest"
+                
+                # Access the secret version
+                response = client.access_secret_version(request={"name": name})
+                
+                # Return the decoded payload (just the raw string, not JSON-parsed)
+                return response.payload.data.decode("UTF-8")
+                
+            except Exception as e:
+                logger.warning(f"{key} is missing from GCP Secret Manager: {e}")
+                return None
+
+
         case "lambda":
             region = os.getenv("AWS_REGION", "us-east-1")
             secret_manager_client = boto3.client(
@@ -141,7 +165,7 @@ def fetch_derived_secrets(faasr_payload):
 
             case "GCP":
                 secret_key = f"{name}_SecretKey"
-                secrets_dict[secret_key] = get_secret(secret_key)
+                secrets_dict[secret_key] = get_secret(secret_key, faasr_payload)
 
             case "SLURM":
                 token = f"{name}_Token"
@@ -177,15 +201,7 @@ def get_secrets_from_env(faasr_payload):
     curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
 
     match (platform):
-        case "gcp":
-            project_id = faasr_payload["ComputeServers"][curr_server]["Namespace"]
-
-            # Get secret name from environment or use default
-            secret_name = os.getenv("GCP_SECRET_NAME", "faasr-secrets")
-
-            # Get secrets from Secret Manager
-            secrets_dict = get_secrets_from_secret_manager(project_id, secret_name)
-        case "github" | "slurm" | "lambda" | "openwhisk":
+        case "github" | "slurm" | "lambda" | "openwhisk" | "gcp":
             # get secrets from env
             secrets_dict = fetch_derived_secrets(faasr_payload)
         case _:
