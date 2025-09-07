@@ -163,7 +163,7 @@ def fetch_derived_secrets(faasr_payload):
                 secrets_dict[access_key] = get_secret(access_key)
                 secrets_dict[secret_key] = get_secret(secret_key)
 
-            case "GCP":
+            case "GoogleCloud":
                 secret_key = f"{name}_SecretKey"
                 secrets_dict[secret_key] = get_secret(secret_key, faasr_payload)
 
