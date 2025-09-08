@@ -25,7 +25,7 @@ on:
       GHCR_IO_REPO:
         description: 'GitHub Container Repository (GHCR) to push image to'
         required: true
-        default: 'nolcut'
+        default: 'faasr'
 
 
 permissions: write-all
