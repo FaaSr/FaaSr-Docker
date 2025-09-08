@@ -10,13 +10,22 @@ RUN apt update && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install R
+# Install Python
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        r-base && \
-    ln -s /usr/bin/Rscript /usr/local/bin/Rscript && \
-    apt-get clean && \
+    apt-get install -y --no-install-recommends python3 python3-pip python3-venv && \
+    ln -s /usr/bin/python3 /usr/local/bin/python && \
     rm -rf /var/lib/apt/lists/*
+
+# Create and activate virtual environment
+ENV VENV=/opt/venv
+RUN python3 -m venv $VENV
+ENV PATH="$VENV/bin:$PATH"
+
+# Install Python packages
+COPY requirements.txt /tmp/
+RUN update-ca-certificates && \
+    pip install --no-cache-dir -r /tmp/requirements.txt && \
+    rm /tmp/requirements.txt
 
 # Install cran packages
 COPY R_packages.R /tmp/
@@ -24,11 +33,5 @@ RUN Rscript /tmp/R_packages.R && \
     rm /tmp/R_packages.R && \
     rm -rf /tmp/downloaded_packages/ /tmp/*.rds /tmp/*.tar.gz
 
-# Install Python packages
-COPY requirements.txt /tmp/
-RUN update-ca-certificates \
-    && pip install --no-cache-dir --requirement /tmp/requirements.txt && \
-    rm /tmp/requirements.txt
-
 # Metadata
-LABEL description="Base image for FaaSr -- R from Python"
+LABEL description="Base image for FaaSr -- R from Rocker"

@@ -17,4 +17,4 @@ RUN update-ca-certificates \
     rm /tmp/requirements.txt
 
 # Metadata
-LABEL description="Docker image for FaaSr-py"
+LABEL description="Base image for FaaSr"

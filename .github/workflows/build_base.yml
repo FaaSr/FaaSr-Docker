@@ -19,7 +19,7 @@ on:
         default: 'base-python'
       # FAASR_PY_VERSION is the FaaSr-py version tag to be used for this base FaaSr image
       FAASR_VERSION:
-        description: 'version tag'
+        description: 'FaaSr version tag'
         required: true
 
 jobs:
