@@ -5,3 +5,5 @@ make=4.3-4.1build1
 cmake=3.22.1-1ubuntu1.22.04.2
 libcurl4-openssl-dev=7.81.0-1ubuntu1.20
 libsodium-dev=1.0.18-1build2
+libssl-dev
+libffi-dev
