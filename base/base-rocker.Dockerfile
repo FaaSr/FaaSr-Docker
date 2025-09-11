@@ -10,19 +10,11 @@ RUN apt update && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install R
+# Install Python
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        r-base && \
-    ln -s /usr/bin/Rscript /usr/local/bin/Rscript && \
+    apt-get install -y python3 python3-pip && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-# Install cran packages
-COPY R_packages.R /tmp/
-RUN Rscript /tmp/R_packages.R && \
-    rm /tmp/R_packages.R && \
-    rm -rf /tmp/downloaded_packages/ /tmp/*.rds /tmp/*.tar.gz
 
 # Install Python packages
 COPY requirements.txt /tmp/
@@ -30,5 +22,11 @@ RUN update-ca-certificates \
     && pip install --no-cache-dir --requirement /tmp/requirements.txt && \
     rm /tmp/requirements.txt
 
+# Install R packages
+COPY R_packages.R /tmp/
+RUN Rscript /tmp/R_packages.R && \
+    rm /tmp/R_packages.R && \
+    rm -rf /tmp/downloaded_packages/ /tmp/*.rds /tmp/*.tar.gz
+
 # Metadata
-LABEL description="Base image for FaaSr -- R from Python"
+LABEL description="Base image for FaaSr -- R from Rocker"

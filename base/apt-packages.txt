@@ -1,8 +1,7 @@
-curl
-unzip
-g++
-make
-cmake
-libcurl4-openssl-dev
-libsodium-dev
-
+curl=7.81.0-1ubuntu1.20
+unzip=6.0-26ubuntu3.2
+g++=4:11.2.0-1ubuntu1
+make=4.3-4.1build1
+cmake=3.22.1-1ubuntu1.22.04.2
+libcurl4-openssl-dev=7.81.0-1ubuntu1.20
+libsodium-dev=1.0.18-1build2
