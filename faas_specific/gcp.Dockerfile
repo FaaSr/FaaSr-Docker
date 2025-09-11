@@ -14,7 +14,7 @@ ARG FAASR_VERSION
 ARG FAASR_INSTALL_REPO
 RUN pip install --no-cache-dir "git+https://github.com/${FAASR_INSTALL_REPO}.git@${FAASR_VERSION}"
 # Install required packages for GCP auth
-RUN pip install cryptography requests google-cloud-secret-manager
+RUN pip install cryptography requests google-cloud-secret-manager pyjwt
 # GCP specific workdir
 WORKDIR /action
 CMD ["python3", "faasr_entry.py"]
