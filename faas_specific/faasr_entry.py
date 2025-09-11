@@ -102,7 +102,7 @@ def fetch_derived_secrets(faasr_payload):
 
     Example keys:
     OW
-        OW_API.key
+        OW_APIkey
     AWS
         AWS_AccessKey
         AWS_SecretKey
@@ -148,13 +148,9 @@ def fetch_derived_secrets(faasr_payload):
                 secrets_dict[token] = get_secret(token)
 
             case "OpenWhisk":
-                dot_key = f"{name}_API.key"
-                us_key = f"{name}_API_KEY"
-                val = get_secret(dot_key)
-                if val is None:
-                    val = get_secret(us_key)
-                secrets_dict[dot_key] = val
-
+                key = f"{name}_APIkey"
+                val = get_secret(key)
+                secrets_dict[key] = val
             case _:
                 logger.warning(f"Unknown FaaSType for {name}: {server_type}")
 

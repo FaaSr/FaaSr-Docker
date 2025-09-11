@@ -12,22 +12,17 @@ RUN apt update && \
 
 # Install Python
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3 python3-pip python3-venv && \
-    ln -s /usr/bin/python3 /usr/local/bin/python && \
+    apt-get install -y python3 python3-pip && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-# Create and activate virtual environment
-ENV VENV=/opt/venv
-RUN python3 -m venv $VENV
-ENV PATH="$VENV/bin:$PATH"
 
 # Install Python packages
 COPY requirements.txt /tmp/
-RUN update-ca-certificates && \
-    pip install --no-cache-dir -r /tmp/requirements.txt && \
+RUN update-ca-certificates \
+    && pip install --no-cache-dir --requirement /tmp/requirements.txt && \
     rm /tmp/requirements.txt
 
-# Install cran packages
+# Install R packages
 COPY R_packages.R /tmp/
 RUN Rscript /tmp/R_packages.R && \
     rm /tmp/R_packages.R && \
