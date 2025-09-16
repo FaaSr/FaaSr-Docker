@@ -178,14 +178,14 @@ def fetch_derived_secrets(faasr_payload):
             case "GitHubActions":
                 key = f"{name}_PAT"
                 logger.info(f"DEBUG: Fetching GitHub PAT: {key}")
-                secrets_dict[key] = get_secret(key)
+                secrets_dict[key] = get_secret(key, faasr_payload)
 
             case "Lambda":
                 access_key = f"{name}_AccessKey"
                 secret_key = f"{name}_SecretKey"
                 logger.info(f"DEBUG: Fetching Lambda secrets: {access_key}, {secret_key}")
-                secrets_dict[access_key] = get_secret(access_key)
-                secrets_dict[secret_key] = get_secret(secret_key)
+                secrets_dict[access_key] = get_secret(access_key, faasr_payload)
+                secrets_dict[secret_key] = get_secret(secret_key, faasr_payload)
 
             case "GoogleCloud":
                 secret_key = f"{name}_SecretKey"
@@ -195,12 +195,12 @@ def fetch_derived_secrets(faasr_payload):
             case "SLURM":
                 token = f"{name}_Token"
                 logger.info(f"DEBUG: Fetching SLURM token: {token}")
-                secrets_dict[token] = get_secret(token)
+                secrets_dict[token] = get_secret(token,faasr_payload)
 
             case "OpenWhisk":
                 key = f"{name}_APIkey"
                 logger.info(f"DEBUG: Fetching OpenWhisk API key: {key}")
-                val = get_secret(key)
+                val = get_secret(key,faasr_payload)
                 secrets_dict[key] = val
             case _:
                 logger.warning(f"Unknown FaaSType for {name}: {server_type}")
@@ -211,8 +211,8 @@ def fetch_derived_secrets(faasr_payload):
         access_key = f"{name}_AccessKey"
         secret_key = f"{name}_SecretKey"
         logger.info(f"DEBUG: Fetching data store secrets: {access_key}, {secret_key}")
-        secrets_dict[access_key] = get_secret(access_key)
-        secrets_dict[secret_key] = get_secret(secret_key)
+        secrets_dict[access_key] = get_secret(access_key,faasr_payload)
+        secrets_dict[secret_key] = get_secret(secret_key,faasr_payload)
 
     logger.info(f"DEBUG: fetch_derived_secrets completed. Retrieved {len(secrets_dict)} secrets")
     successful_secrets = [k for k, v in secrets_dict.items() if v is not None]
