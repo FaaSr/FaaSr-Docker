@@ -341,14 +341,33 @@ def get_payload_from_env(lambda_event=None):
     action_list_keys = list(faasr_payload["ActionList"].keys())
     logger.info(f"DEBUG: get_payload_from_env - ActionList keys: {action_list_keys}")
     
-    if curr_func in faasr_payload["ActionList"]:
-        curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
-        logger.info(f"DEBUG: get_payload_from_env - Current server: {curr_server}")
+    # Look for server - use a temporary variable for server lookup only
+    lookup_func = curr_func  # Start with original function name
+    curr_server = None
+    
+    # First try direct lookup
+    if lookup_func in faasr_payload["ActionList"]:
+        curr_server = faasr_payload["ActionList"][lookup_func]["FaaSServer"]
+        logger.info(f"DEBUG: get_payload_from_env - Server found with direct lookup: {curr_server}")
     else:
-        logger.error(f"DEBUG: get_payload_from_env - CRITICAL: Function '{curr_func}' not in ActionList!")
-        logger.error(f"DEBUG: This will cause the NoneType error!")
-        # Continue to trigger the original error for now
-        curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
+        # Try removing workflow prefix
+        workflow_name = faasr_payload.get("WorkflowName", "")
+        logger.info(f"DEBUG: get_payload_from_env - Checking for workflow prefix: {workflow_name}")
+        
+        if workflow_name and lookup_func.startswith(f"{workflow_name}-"):
+            unprefixed_func = lookup_func.replace(f"{workflow_name}-", "", 1)
+            logger.info(f"DEBUG: get_payload_from_env - Trying unprefixed name: {unprefixed_func}")
+            
+            if unprefixed_func in faasr_payload["ActionList"]:
+                curr_server = faasr_payload["ActionList"][unprefixed_func]["FaaSServer"]
+                logger.info(f"DEBUG: get_payload_from_env - Server found with unprefixed name: {curr_server}")
+            else:
+                logger.error(f"DEBUG: get_payload_from_env - Function not found with either name!")
+    
+    # Check if we found a server
+    if curr_server is None:
+        logger.error(f"DEBUG: get_payload_from_env - CRITICAL: No server found for function '{curr_func}'")
+        raise KeyError(f"Function '{curr_func}' not found in ActionList. Available functions: {action_list_keys}")
 
     # determine if secrets should be fetched
     # from secret store or overwritten payload
