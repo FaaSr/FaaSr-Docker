@@ -422,7 +422,7 @@ def handler(event=None, context=None):
 
     global_config.add_s3_log_handler(faasr_payload, start_time)
 
-    if local_run and not faasr_payload["InvocationID"]:
+    if local_run and not faasr_payload.get("InvocationID"):
         faasr_payload["InvocationID"] = str(uuid.uuid4())
 
     # run user function
