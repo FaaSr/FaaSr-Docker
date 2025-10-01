@@ -8,6 +8,7 @@ from datetime import datetime
 
 import boto3
 from FaaSr_py import Executor, FaaSrPayload, S3LogSender, Scheduler, global_config
+from FaaSr_py.vm import workflow_needs_vm, orchestrate_vm
 
 logger = logging.getLogger("FaaSr_py")
 local_run = False
@@ -160,6 +161,19 @@ def fetch_derived_secrets(faasr_payload):
         secrets_dict[access_key] = get_secret(access_key,faasr_payload)
         secrets_dict[secret_key] = get_secret(secret_key,faasr_payload)
 
+    if "VMConfig" in faasr_payload:
+        vm_config = faasr_payload["VMConfig"]
+        vm_name = vm_config.get("Name")
+        
+        if vm_name:
+            provider = vm_config.get("Provider", "AWS")
+            
+            if provider == "AWS":
+                access_key = f"{vm_name}_AccessKey"
+                secret_key = f"{vm_name}_SecretKey"
+                secrets_dict[access_key] = get_secret(access_key, faasr_payload)
+                secrets_dict[secret_key] = get_secret(secret_key, faasr_payload)
+
     return secrets_dict
 
 
@@ -307,6 +321,12 @@ def handler(event=None, context=None):
 
     if local_run and not faasr_payload.get("InvocationID"):
         faasr_payload["InvocationID"] = str(uuid.uuid4())
+
+    if os.getenv("FAASR_PLATFORM", "").lower() == "github":
+        if workflow_needs_vm(faasr_payload):
+            logger.info("VM resources required - orchestrating VM lifecycle")
+            # This handles VM start/stop based on function position in workflow
+            orchestrate_vm(faasr_payload)
 
     # run user function
     function_executor = Executor(faasr_payload)
