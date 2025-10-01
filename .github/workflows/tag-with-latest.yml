@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       # IMAGE_NAME is the name of the FaaSr image to tag as latest - without the ta, and without FaaS-specific prefix!
-      # Example: python
+      # Example: python, r
       # Note - this action requires the following secrets to be configured:
       # DOCKERHUB_USERNAME: name of Dockerhub user, eg faasr
       # DOCKERHUB_TOKEN: credential to tag DockerHub
@@ -12,7 +12,7 @@ on:
       # AWS_ACCESS_KEY_ID: credential to tag ECR
       # AWS_SECRET_ACCESS_KEY: credential to tag ECR
       IMAGE_NAME:
-        description: 'name of the FaaSr image - without the tag, and without the FaaS-specific prefix (e.g. openwhisk-, github-actions), e.g. python, rocker'
+        description: 'name of the FaaSr image - without the tag, and without the FaaS-specific prefix (e.g. openwhisk-, github-actions), e.g. python, r'
         required: true
         default: 'python'
       # FAASR_VERSION is the FaaSr version tag to be used for this base FaaSr image
