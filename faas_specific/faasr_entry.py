@@ -322,12 +322,6 @@ def handler(event=None, context=None):
     if local_run and not faasr_payload.get("InvocationID"):
         faasr_payload["InvocationID"] = str(uuid.uuid4())
 
-    if os.getenv("FAASR_PLATFORM", "").lower() == "github":
-        if workflow_needs_vm(faasr_payload):
-            logger.info("VM resources required - orchestrating VM lifecycle")
-            # This handles VM start/stop based on function position in workflow
-            orchestrate_vm(faasr_payload)
-
     # run user function
     function_executor = Executor(faasr_payload)
     curr_function = faasr_payload["FunctionInvoke"]
