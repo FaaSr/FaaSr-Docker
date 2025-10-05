@@ -23,7 +23,7 @@ def store_pat_in_env(dictionary):
             if store_pat_in_env(val):
                 return True
         elif key.lower().endswith("pat"):
-            os.environ["TOKEN"] = val
+            os.environ["GH_PAT"] = val
             return True
     return
 
