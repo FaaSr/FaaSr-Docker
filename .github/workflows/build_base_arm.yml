@@ -1,4 +1,4 @@
-name: base-arm -> DockerHub
+name: py-base-arm -> DockerHub
   # This action builds a base python image for use in FaaSr
   # It requires you to have your DOCKERHUB_USERNAME and DOCKERHUB_TOKEN configured as secrets
   # The base image can be build from a Python image input as BUILD_FROM
@@ -40,11 +40,14 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build Openwhisk Container image
-        run: |
-          cd faas_specific
-          docker build --platform linux/arm64 -f openwhisk.Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BASE_IMAGE=${{ github.event.inputs.BASE_IMAGE }} --build-arg FAASR_VERSION=${{ github.event.inputs.FAASR_VERSION }} --build-arg FAASR_INSTALL_REPO=${{ github.event.inputs.FAASR_INSTALL_REPO }} .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Push Openwhisk image to Docker Hub
+      - name: Build base FaaSr Docker image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.TARGET_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
+          cd base
+          docker buildx build --platform linux/arm64 \
+            -f base.Dockerfile \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.BASE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} \
+            --build-arg BUILD_FROM=${{ github.event.inputs.BUILD_FROM }} \
+            --push .
