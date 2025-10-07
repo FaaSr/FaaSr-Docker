@@ -1,0 +1,104 @@
+name: Tag DockerHub, GHCR, ECR as latest
+
+on: 
+  workflow_dispatch:
+    inputs:
+      # IMAGE_NAME is the name of the FaaSr image to tag as latest - without the ta, and without FaaS-specific prefix!
+      # Example: python, r
+      # Note - this action requires the following secrets to be configured:
+      # DOCKERHUB_USERNAME: name of Dockerhub user, eg faasr
+      # DOCKERHUB_TOKEN: credential to tag DockerHub
+      # GITHUB_TOKEN: credential to tag GHCR
+      # AWS_ACCESS_KEY_ID: credential to tag ECR
+      # AWS_SECRET_ACCESS_KEY: credential to tag ECR
+      IMAGE_NAME:
+        description: 'name of the FaaSr image - without the tag, and without the FaaS-specific prefix (e.g. openwhisk-, github-actions), e.g. python, r'
+        required: true
+        default: 'python'
+      # FAASR_VERSION is the FaaSr version tag to be used for this base FaaSr image
+      # Examples: 1.1.2, 1.3.1
+      FAASR_VERSION:
+        description: 'FaaSr version'
+        required: true 
+      GHCR_IO_REPO:
+        description: 'GitHub Container Repository (GHCR) to tag as latest'
+        required: true
+        default: 'faasr'
+      # AWS_REGION is the AWS ECR region to tag image
+      # Examples: us-east-1        
+      AWS_REGION:
+        description: 'AWS ECR region to tag as latest'
+        required: true
+        default: 'us-east-1'
+
+env:
+  GITHUB_ACTIONS_PREFIX : github-actions
+  OPENWHISK_PREFIX: openwhisk
+  AWS_LAMBDA_PREFIX: aws-lambda
+  GCP_PREFIX: gcp
+  SLURM_PREFIX: slurm
+
+
+permissions: write-all
+
+jobs:
+  tag-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to the Github Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ github.event.inputs.AWS_REGION }}
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2  
+      - name: Pull openwhisk Dockerhub image
+        run: |
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.OPENWHISK_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
+      - name: Tag and push openwhisk Dockerhub image
+        run: |
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.OPENWHISK_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.OPENWHISK_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.OPENWHISK_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
+      - name: Pull GCP Dockerhub image
+        run: |
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.GCP_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
+      - name: Tag and push openwhisk Dockerhub image
+        run: |
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.GCP_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.GCP_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.GCP_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
+      - name: Pull Slurm Dockerhub image
+        run: |
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.SLURM_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
+      - name: Tag and push openwhisk Dockerhub image
+        run: |
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.SLURM_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.SLURM_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.SLURM_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
+      - name: Pull github-actions GHCR image
+        run: |
+          docker pull ghcr.io/${{ github.event.inputs.GHCR_IO_REPO }}/${{ env.GITHUB_ACTIONS_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} 
+      - name: Tag and push hithub-actions GHCR image
+        run: |
+          docker tag ghcr.io/${{ github.event.inputs.GHCR_IO_REPO }}/${{ env.GITHUB_ACTIONS_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} ghcr.io/${{ github.event.inputs.GHCR_IO_REPO }}/${{ env.GITHUB_ACTIONS_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
+          docker push ghcr.io/${{ github.event.inputs.GHCR_IO_REPO }}/${{ env.GITHUB_ACTIONS_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
+      - name: Pull aws-lambda AWS ECR image
+        run: |
+          docker pull ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_LAMBDA_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} 
+      - name: Tag and push aws-lambda-tidyverse AWS ECR image
+        run: |
+          docker tag ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_LAMBDA_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_LAMBDA_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_LAMBDA_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
+
+          
