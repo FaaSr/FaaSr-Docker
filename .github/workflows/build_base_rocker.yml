@@ -16,7 +16,7 @@ on:
       BASE_NAME:
         description: 'name to be used for this base FaaSr image'
         required: true
-        default: 'base-rocker'
+        default: 'base-r'
       # FAASR_PY_VERSION is the FaaSr-py version tag to be used for this base FaaSr image
       FAASR_VERSION:
         description: 'FaaSr version tag'
