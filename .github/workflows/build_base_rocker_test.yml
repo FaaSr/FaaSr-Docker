@@ -1,0 +1,45 @@
+name: rocker-base-test -> DockerHub
+  # This action builds a base python image for use in FaaSr
+  # It requires you to have your DOCKERHUB_USERNAME and DOCKERHUB_TOKEN configured as secrets
+  # The base image can be build from a Python image input as BUILD_FROM
+  # Once built, the base image will be pushed to DOCKERHUB_USERNAME/BASE_NAME:FAASR_PY_VERSION
+on: 
+  workflow_dispatch:
+    inputs:
+      # BUILD_FROM is the full user/name:tag of the Python image on DockerHub to build this base from
+      BUILD_FROM:
+        description: 'user/name:tag to build this base from'
+        required: true
+        default: 'rocker/tidyverse:4.4'
+      # BASE_NAME is the name to be used for this base FaaSr image
+      # Examples: base-tidyverse, base-geospatial, base-flare
+      BASE_NAME:
+        description: 'name to be used for this base FaaSr image'
+        required: true
+        default: 'base-r-test'
+      # FAASR_PY_VERSION is the FaaSr-py version tag to be used for this base FaaSr image
+      FAASR_VERSION:
+        description: 'FaaSr version tag'
+        required: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build base FaaSr Docker image
+        run: |
+          cd base
+          docker build -f base-rocker-test.Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.BASE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} --build-arg BUILD_FROM=${{ github.event.inputs.BUILD_FROM }} .
+      - name: Push base FaaSr Docker image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.BASE_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
