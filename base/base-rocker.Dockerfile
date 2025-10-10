@@ -19,6 +19,7 @@ RUN apt-get update && \
 # Install Python packages
 COPY requirements.txt /tmp/
 RUN update-ca-certificates \
+    && python3 -m pip config set global.break-system-packages true \
     && pip install --no-cache-dir --requirement /tmp/requirements.txt && \
     rm /tmp/requirements.txt
 
