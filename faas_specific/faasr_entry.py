@@ -13,19 +13,15 @@ logger = logging.getLogger("FaaSr_py")
 local_run = False
 
 
-def store_pat_in_env(dictionary):
+def store_pat_in_env():
     """
     Checks if token is present in dict and stores
     in environment variable "TOKEN" if it is
     """
-    for key, val in dictionary.items():
-        if isinstance(val, dict):
-            if store_pat_in_env(val):
-                return True
-        elif key.lower().endswith("pat"):
-            os.environ["GH_PAT"] = val
-            return True
-    return
+    token = get_secret("GH_PAT")
+    if not token:
+        logger.warning("GitHub PAT not present; your workflow will not be able to pull from private repos and may hit rate limits") # noqa E501
+    os.environ["GH_PAT"] = token
 
 
 def get_secrets_from_secret_manager(project_id, secret_name):
@@ -249,6 +245,8 @@ def get_payload_from_env(lambda_event=None):
     """
     platform = os.getenv("FAASR_PLATFORM").lower()
 
+    store_pat_in_env()
+
     if not platform:
         raise ValueError("FAASR_PLATFORM environment variable not set")
 
@@ -276,16 +274,11 @@ def get_payload_from_env(lambda_event=None):
 
         secrets_dict = get_secrets_from_env(faasr_payload)
 
-        token_present = store_pat_in_env(secrets_dict)
-
         faasr_payload.replace_secrets(secrets_dict)
     else:
         # store token in env for use in fetching file from gh
-        token_present = store_pat_in_env(faasr_payload.overwritten["ComputeServers"])
         logger.debug("UseSecretStore off - using overwritten")
 
-    if not token_present:
-        logger.info("Without a GitHub PAT in your workflow, you may hit rate limits")
     return faasr_payload
 
 
