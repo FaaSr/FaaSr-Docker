@@ -39,6 +39,9 @@ def get_secret(key, faasr_payload=None):
     match platform:
         case "gcp":
             try:
+                if faasr_payload is None:
+                    logger.warning("cannot fetch secret without the payloadd details")
+                    return
                 from google.cloud import secretmanager
 
                 # Get project ID from payload
