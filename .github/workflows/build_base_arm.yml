@@ -10,7 +10,7 @@ on:
       BUILD_FROM:
         description: 'user/name:tag to build this base from'
         required: true
-        default: 'arm64v8/python'
+        default: 'arm64v8/python:3.13'
       # BASE_NAME is the name to be used for this base FaaSr image
       # Examples: base-tidyverse, base-geospatial, base-flare
       BASE_NAME:
