@@ -21,6 +21,7 @@ def store_pat_in_env():
     token = get_secret("GH_PAT")
     if not token:
         logger.warning("GitHub PAT not present; your workflow will not be able to pull from private repos and may hit rate limits") # noqa E501
+        return
     os.environ["GH_PAT"] = token
 
 def get_secret(key, faasr_payload=None):
