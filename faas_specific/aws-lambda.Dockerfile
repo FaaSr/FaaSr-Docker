@@ -19,7 +19,7 @@ ARG FAASR_INSTALL_REPO
 RUN pip install --no-cache-dir awslambdaric \
  && pip install --no-cache-dir "git+https://github.com/${FAASR_INSTALL_REPO}.git@${FAASR_VERSION}"
 
-ENTRYPOINT ["python", "-m", "awslambdaric"]
+ENTRYPOINT ["python3", "-m", "awslambdaric"]
 
 # Run invoke script
 CMD ["faasr_entry.handler"]
