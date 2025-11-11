@@ -232,6 +232,9 @@ def handle_ow():
     # Get payload from command line argument
     payload = json.loads(sys.argv[1])
 
+    if "GH_PAT" in payload:
+        os.environ["GH_PAT"] = payload["GH_PAT"]
+
     payload_url = payload["PAYLOAD_URL"]
     overwritten = payload["OVERWRITTEN"]
 
