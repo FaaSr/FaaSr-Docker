@@ -105,7 +105,7 @@ jobs:
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.K8S_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }}
       - name: Tag and push Kubernetes Dockerhub image
         run: |
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.K8S_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.SLURM_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.K8S_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:${{ github.event.inputs.FAASR_VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.K8S_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.K8S_PREFIX }}-${{ github.event.inputs.IMAGE_NAME }}:latest
 
           
