@@ -1,0 +1,32 @@
+# BASE_IMAGE is the full name of the base image e.g. faasr/base-tidyverse:1.1.2
+ARG BASE_IMAGE
+# Start from the specified base image
+FROM $BASE_IMAGE
+# Set environment variable for platform
+ENV FAASR_PLATFORM="kubernetes"
+# Create runtime directory
+RUN mkdir -p /action
+# Copy FaaSr invocation code
+COPY faasr_entry.py /action/
+# FAASR_VERSION FaaSr version to install from - this must match a tag in the GitHub repository e.g. 1.1.2
+ARG FAASR_VERSION
+
+
+# Choose 1 of the following -- either grab, build, and install the test backend locally (this is only for running demos) or grab the most recent version on GitHub install
+
+# Copy the local FaaSrPy Library
+#COPY ../../FaaSr-Backend/ /FaaSr-Backend
+#WORKDIR /FaaSr-Backend
+#RUN python3 setup.py build
+#RUN python3 setup.py install
+
+
+# FAASR_INSTALL_REPO is the name of the user's GitHub repository to install FaaSr from e.g. janedoe/FaaSr-Package-dev
+ARG FAASR_INSTALL_REPO
+RUN pip install --no-cache-dir "git+https://github.com/${FAASR_INSTALL_REPO}.git@${FAASR_VERSION}"
+
+# Install required packages
+RUN pip install requests pyjwt
+# Kubernetes specific workdir
+WORKDIR /action
+CMD ["python3", "faasr_entry.py"]
