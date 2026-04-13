@@ -149,7 +149,7 @@ def fetch_derived_secrets(faasr_payload):
                 secrets_dict[token] = get_secret(token,faasr_payload)
 
             case "Kubernetes":
-                token = f"K8s_Token"
+                token = f"{name}_Token"
                 secrets_dict[token] = get_secret(token, faasr_payload)
 
             case "OpenWhisk":
