@@ -14,7 +14,7 @@ RUN apt update && \
 # https://github.com/docker-library/julia/blob/30e953f8abfa024651984120929c403b7cdf5a9a/1.12/trixie/Dockerfile)
 
 
-ENV JULIA_PATH /usr/local/julia
+ENV JULIA_PATH /tmp/julia
 ENV PATH $JULIA_PATH/bin:$PATH
 
 # https://julialang.org/juliareleases.asc
@@ -79,7 +79,7 @@ RUN set -eux; \
 	julia --version
 
 # Install Julia packages
-ENV JULIA_DEPOT_PATH=/opt/julia_depot
+ENV JULIA_DEPOT_PATH $JULIA_PATH/packages
 RUN julia -e 'using Pkg; Pkg.add(["JSON","HTTP","CSV","DataFrames"])'
 
 # Install Python packages
