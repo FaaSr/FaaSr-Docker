@@ -2,6 +2,9 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM AS build
 
+RUN mkdir /tmp/packages
+ENV PYTHONPATH=/tmp/packages
+
 # Install apt packages
 COPY apt-packages.txt /tmp/
 RUN apt update && \
