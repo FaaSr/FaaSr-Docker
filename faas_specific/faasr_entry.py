@@ -85,7 +85,7 @@ def get_secret(key, faasr_payload=None):
                 logger.warning(f"{key} is missing from AWS Secret Manager")
 
             return secret
-        case "github" | "slurm" | "openwhisk":
+        case "github" | "slurm" | "openwhisk" | "kubernetes":
             # get secret from env
             secret = os.getenv(key)
             if secret is None:
@@ -109,6 +109,8 @@ def fetch_derived_secrets(faasr_payload):
         GCP_SecretKey
     SLURM
         SLURM_Token
+    Kubernetes
+        K8s_Token
     GH
         GH_PAT
     Minio
@@ -145,6 +147,10 @@ def fetch_derived_secrets(faasr_payload):
             case "SLURM":
                 token = f"{name}_Token"
                 secrets_dict[token] = get_secret(token,faasr_payload)
+
+            case "Kubernetes":
+                token = f"{name}_Token"
+                secrets_dict[token] = get_secret(token, faasr_payload)
 
             case "OpenWhisk":
                 key = f"{name}_APIkey"
@@ -186,7 +192,7 @@ def get_secrets_from_env(faasr_payload):
     curr_server = faasr_payload["ActionList"][curr_func]["FaaSServer"]
 
     match (platform):
-        case "github" | "slurm" | "lambda" | "openwhisk" | "gcp":
+        case "github" | "slurm" | "lambda" | "openwhisk" | "gcp" | "kubernetes":
             # get secrets from env
             secrets_dict = fetch_derived_secrets(faasr_payload)
         case _:
@@ -206,6 +212,15 @@ def handle_gcp():
 
 def handle_slurm():
     """Handles SLURM payload specifics"""
+    payload_url = os.getenv("PAYLOAD_URL")
+    overwritten = json.loads(os.getenv("OVERWRITTEN", "{}"))
+
+    logger.debug(f"Payload URL: {payload_url}")
+    return FaaSrPayload(payload_url, overwritten)
+
+
+def handle_kubernetes():
+    """Handles Kubernetes payloads"""
     payload_url = os.getenv("PAYLOAD_URL")
     overwritten = json.loads(os.getenv("OVERWRITTEN", "{}"))
 
@@ -258,7 +273,7 @@ def get_payload_from_env(lambda_event=None):
     """
     platform = os.getenv("FAASR_PLATFORM").lower()
 
-    if platform in ["github", "slurm", "openwhisk", "lambda"]:
+    if platform in ["github", "slurm", "openwhisk", "lambda", "kubernetes"]:
         store_pat_in_env()
 
     if not platform:
@@ -275,6 +290,8 @@ def get_payload_from_env(lambda_event=None):
             faasr_payload = handle_slurm()
         case "gcp":
             faasr_payload = handle_gcp()
+        case "kubernetes":
+            faasr_payload = handle_kubernetes()
         case _:
             raise ValueError(f"Unsupported platform: {platform}")
 
