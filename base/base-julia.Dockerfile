@@ -80,7 +80,7 @@ RUN set -eux; \
 
 # Install Julia packages
 ENV JULIA_DEPOT_PATH $JULIA_PATH/packages
-RUN julia -e 'using Pkg; Pkg.add(["JSON","HTTP","CSV","DataFrames"])'
+RUN julia -e 'using Pkg; Pkg.add(["JSON","HTTP","CSV","DataFrames","OrdinaryDiffEq"])'
 
 # Install Python packages
 COPY requirements.txt /tmp/
