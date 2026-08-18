@@ -34,6 +34,9 @@ This repo contains GitHub actions for pushing containers of two types: **base** 
 - **slurm → DockerHub**  
   Builds a slurm specifc image from a FaaSr base container, and pushes it to DockerHub.  
 
+- **kubernetes → DockerHub**  
+  Builds a kubernetes specifc image from a FaaSr base container, and pushes it to DockerHub.
+
 ---
 
 **Note:** The type of FaaSr base image the platform specific images build from will determine which type of functions they support.  
